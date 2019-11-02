@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -33,6 +32,14 @@ public class Answer
 
     @UpdateTimestamp
     private LocalDateTime updated_at;
+
+    public Answer(String title, String url)
+    {
+        this.title = title;
+        this.url = url;
+    }
+
+    public Answer(){}
 
     public Integer getId()
     {
@@ -87,6 +94,14 @@ public class Answer
         this.chilivote = chilivote;
     }
 
+    public Set<Vote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(Set<Vote> votes) {
+        this.votes = votes;
+    }
+
     //Navigation Properties
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -97,6 +112,6 @@ public class Answer
     private User user;
 
     //Navigation Properties
-    @OneToMany(mappedBy = "answer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "answer", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Vote> votes;
 }

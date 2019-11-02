@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -69,11 +68,27 @@ public class Chilivote
         this.created_at = created_at;
     }
 
+    public Set<Answer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(Set<Answer> answers) {
+        this.answers = answers;
+    }
+
+    public Set<Vote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(Set<Vote> votes) {
+        this.votes = votes;
+    }
+
     //Navigation Properties
-    @OneToMany(mappedBy = "chilivote", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "chilivote", orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Answer> answers;
 
-    @OneToMany(mappedBy = "chilivote", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "chilivote", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<Vote> votes;
 
     @ManyToOne

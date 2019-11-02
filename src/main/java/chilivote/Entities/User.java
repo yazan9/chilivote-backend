@@ -1,5 +1,6 @@
 package chilivote.Entities;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -16,8 +17,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-public class User
+public class User implements Serializable
 {
+    private static final long serialVersionUID = -748956247024967638L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
@@ -108,21 +111,35 @@ public class User
         this.answers = answers;
     }
 
-    public Set<Vote> getVote() {
+    public Set<Vote> getVotes() {
         return votes;
     }
 
-    public void setVote(Set<Vote> votes) {
+    public void setVotes(Set<Vote> votes) {
         this.votes = votes;
     }
 
+    public Set<Follow> getFollowers() {
+        return followers;
+    }
+
+    public Set<Follow> getFollowing() {
+        return following;
+    }
+
     //Navigation Properties
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Chilivote> chilivotes;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Answer> answers;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<Vote> votes;
+
+    @OneToMany(mappedBy="to", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Follow> followers;
+
+    @OneToMany(mappedBy="from", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Follow> following;
 }

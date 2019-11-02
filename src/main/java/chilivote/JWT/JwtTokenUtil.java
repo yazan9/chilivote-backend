@@ -5,9 +5,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import chilivote.Entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,6 +27,12 @@ public class JwtTokenUtil implements Serializable {
     // retrieve username from jwt token
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
+    }
+
+    // retrieve id from jwt token
+    public Integer getIdFromToken(String token) {
+        Claims AllClaims = getAllClaimsFromToken(token.substring(7));
+        return (Integer) AllClaims.get("id");
     }
 
     // retrieve expiration date from jwt token
@@ -48,9 +57,9 @@ public class JwtTokenUtil implements Serializable {
     }
 
     // generate token for user
-    public String generateToken(String Email) {
+    public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, Email);
+        return doGenerateToken(claims, user);
     }
 
     // while creating the token -
@@ -59,8 +68,12 @@ public class JwtTokenUtil implements Serializable {
     // 3. According to JWS Compact
     // Serialization(https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-41#section-3.1)
     // compaction of the JWT to a URL-safe string
-    private String doGenerateToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
+    private String doGenerateToken(Map<String, Object> claims, User user) {
+        claims.put("avatar", user.getAvatar());
+        claims.put("username", user.getUsername());
+        claims.put("id", user.getId());
+        claims.put("email", user.getEmail());
+        return Jwts.builder().setClaims(claims).setSubject(user.getEmail()).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
     }
