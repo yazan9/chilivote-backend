@@ -113,8 +113,17 @@ public class UserLogicHandler
     public String unfollow(Integer followed_id, String token, FollowRepository followRepository)
     {
         Integer follower_id = jwtTokenUtil.getIdFromToken(token);
-        Follow ToDeleteEntity = followRepository.findById(new FollowId(follower_id, followed_id))
-        .orElseThrow(() -> new RelationshipNotFoundException());
+
+        User Follower = userRepository.findById(follower_id)
+        .orElseThrow(() -> new UserNotFoundException(follower_id));
+
+        User Followed = userRepository.findById(followed_id)
+        .orElseThrow(() -> new UserNotFoundException(followed_id));
+
+        Follow ToDeleteEntity = followRepository.findByFromAndTo(Follower, Followed);
+        if(ToDeleteEntity == null)
+        throw new RelationshipNotFoundException();
+        //.orElseThrow(() -> new RelationshipNotFoundException());
         followRepository.delete(ToDeleteEntity);
         return "ok";
     }

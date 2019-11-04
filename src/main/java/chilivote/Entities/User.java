@@ -134,7 +134,7 @@ public class User implements Serializable
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Answer> answers;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<Vote> votes;
 
     @OneToMany(mappedBy="to", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

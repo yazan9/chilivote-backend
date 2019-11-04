@@ -1,5 +1,7 @@
 package chilivote.LogicHandlers;
 
+import java.util.Optional;
+
 import org.springframework.dao.DataIntegrityViolationException;
 
 import chilivote.Entities.Answer;
@@ -11,7 +13,6 @@ import chilivote.Exceptions.DuplicateVoteException;
 import chilivote.Exceptions.UserNotFoundException;
 import chilivote.JWT.JwtTokenUtil;
 import chilivote.Repositories.AnswerRepository;
-import chilivote.Repositories.ChilivoteRepository;
 import chilivote.Repositories.UserRepository;
 import chilivote.Repositories.VoteRepository;
 
@@ -20,13 +21,15 @@ public class VoteLogicHandler
     private UserRepository userRepository;
     private JwtTokenUtil jwtTokenUtil;
     private AnswerRepository answerRepository;
+    private VoteRepository voteRepository;
 
     public VoteLogicHandler(
-        JwtTokenUtil jwtTokenUtil, UserRepository userRepository, AnswerRepository answerRepository)
+        JwtTokenUtil jwtTokenUtil, UserRepository userRepository, AnswerRepository answerRepository, VoteRepository voteRepository)
     {
         this.answerRepository = answerRepository;
         this.jwtTokenUtil = jwtTokenUtil;
         this.userRepository = userRepository;
+        this.voteRepository = voteRepository;
     }
 
     public String vote(Integer answerId, String token)
@@ -45,6 +48,18 @@ public class VoteLogicHandler
         vote.setAnswer(answer);
         vote.setUser(user);
         vote.setChilivote(chilivote);
+
+        //Check if the user has already voted
+        Optional<Vote> optional = chilivote.getVotes().stream().filter(v -> v.getUser().getId() == user.getId()).findFirst();
+        if(!optional.isEmpty())
+        {
+            Vote UserPrevVote = optional.get();
+            answer.getVotes().remove(UserPrevVote);
+            UserPrevVote.setAnswer(null);
+            UserPrevVote.setUser(null);
+            UserPrevVote.setChilivote(null);
+            voteRepository.deleteById(UserPrevVote.getId());
+        }
 
         answer.getVotes().add(vote);
 

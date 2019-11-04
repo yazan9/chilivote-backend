@@ -1,5 +1,7 @@
 package chilivote.Repositories;
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 
 import chilivote.Entities.Chilivote;
@@ -8,4 +10,5 @@ import chilivote.Entities.Chilivote;
 // CRUD refers Create, Read, Update, Delete
 
 public interface ChilivoteRepository extends CrudRepository<Chilivote, Integer> {
+    List<Chilivote> findByUserId(Integer id);
 }

@@ -19,6 +19,8 @@ import chilivote.LogicHandlers.ChilivoteLogicHandler;
 import chilivote.Models.DTOs.ChilivoteDTOBE;
 import chilivote.Models.DTOs.ChilivoteDTOUI;
 import chilivote.Models.DTOs.ChilivoteDTOUIUpdate;
+import chilivote.Models.DTOs.ChilivoteVotableDTO;
+import chilivote.Models.DTOs.MyChilivoteDTO;
 import chilivote.Repositories.ChilivoteRepository;
 import chilivote.Repositories.UserRepository;
 
@@ -40,6 +42,20 @@ public class ChilivoteController
     public @ResponseBody Iterable<Chilivote> GetAllUsers()
     {
         return chilivoteRepository.findAll();
+    }
+
+    @GetMapping(path="/mychilivotes")
+    public @ResponseBody Iterable<MyChilivoteDTO> GetMyChilivotes(@RequestHeader("Authorization") String token)
+    {
+        return new ChilivoteLogicHandler(chilivoteRepository, jwtTokenUtil, userRepository).
+        GetMyChilivotes(token);
+    }
+
+    @GetMapping(path="/feed")
+    public @ResponseBody Iterable<ChilivoteVotableDTO> Feed(@RequestHeader("Authorization") String token)
+    {
+        return new ChilivoteLogicHandler(chilivoteRepository, jwtTokenUtil, userRepository).
+        GetFeed(token);
     }
 
     @PostMapping(path="/add")

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import chilivote.Entities.User;
 import chilivote.JWT.JwtResponse;
@@ -24,6 +25,7 @@ import chilivote.Models.DTOs.UserGenericDTO;
 import chilivote.Models.Requests.FBTokenRequest;
 import chilivote.Repositories.FollowRepository;
 import chilivote.Repositories.UserRepository;
+import org.springframework.http.HttpStatus;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @Controller
@@ -66,15 +68,17 @@ public class UserController
         return new UserLogicHandler(userRepository, jwtTokenUtil).getFollowing(token);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping(path="/follow/{id}")
-    public @ResponseBody String follow(@RequestHeader("Authorization") String token, @PathVariable Integer id)
+    public @ResponseBody void follow(@RequestHeader("Authorization") String token, @PathVariable Integer id)
     {
-        return new UserLogicHandler(userRepository, jwtTokenUtil).follow(id, token, followRepository);
+        new UserLogicHandler(userRepository, jwtTokenUtil).follow(id, token, followRepository);
     } 
 
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping(path="/unfollow/{id}")
-    public @ResponseBody String unfollow(@RequestHeader("Authorization") String token, @PathVariable Integer id)
+    public @ResponseBody void unfollow(@RequestHeader("Authorization") String token, @PathVariable Integer id)
     {
-        return new UserLogicHandler(userRepository, jwtTokenUtil).unfollow(id, token, followRepository);
+        new UserLogicHandler(userRepository, jwtTokenUtil).unfollow(id, token, followRepository);
     } 
 }
