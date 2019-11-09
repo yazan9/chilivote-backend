@@ -68,6 +68,12 @@ public class UserController
         return new UserLogicHandler(userRepository, jwtTokenUtil).getFollowing(token);
     }
 
+    @GetMapping(path="/suggested_users")
+    public @ResponseBody List<UserGenericDTO> suggestedUsers(@RequestHeader("Authorization") String token)
+    {
+        return new UserLogicHandler(userRepository, jwtTokenUtil).getRandomUsers(token);
+    }
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path="/follow/{id}")
     public @ResponseBody void follow(@RequestHeader("Authorization") String token, @PathVariable Integer id)

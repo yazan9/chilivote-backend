@@ -8,4 +8,5 @@ public class UserGenericDTO
     public String username;
     public String avatar;
     public LocalDateTime created_at;
+    public boolean isFollowing;
 }

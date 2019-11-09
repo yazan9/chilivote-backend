@@ -3,10 +3,14 @@ package chilivote.LogicHandlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.HttpClientErrorException;
@@ -15,11 +19,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import chilivote.Entities.Follow;
 import chilivote.Entities.User;
+import chilivote.Exceptions.DuplicateRelationshipEntryException;
 import chilivote.Exceptions.RelationshipNotFoundException;
+import chilivote.Exceptions.UnknownErrorException;
 import chilivote.Exceptions.UserNotFoundException;
 import chilivote.JWT.JwtTokenUtil;
 import chilivote.Models.FacebookProfile;
-import chilivote.Models.FollowId;
 import chilivote.Models.DTOs.FollowerDTO;
 import chilivote.Models.DTOs.FollowingDTO;
 import chilivote.Models.DTOs.UserGenericDTO;
@@ -105,7 +110,17 @@ public class UserLogicHandler
         .orElseThrow(() -> new UserNotFoundException(followed_id));
 
         Follow NewEntity = new Follow(Follower, Followed);
+        try{
         followRepository.save(NewEntity);
+        }
+        catch(DataIntegrityViolationException ex)
+        {
+            throw new DuplicateRelationshipEntryException();
+        }
+        catch(Exception ex)
+        {
+            throw new UnknownErrorException();
+        }
     
         return "ok";
     }
@@ -146,6 +161,25 @@ public class UserLogicHandler
 
         Set<Follow> set = user.getFollowing();
         return toFollowingDTO(set);
+    }
+
+    public List<UserGenericDTO> getRandomUsers(String token)
+    {
+        Integer user_id = jwtTokenUtil.getIdFromToken(token);
+        User owner = userRepository.findById(user_id)
+        .orElseThrow(() -> new UserNotFoundException(user_id));
+
+        Long q = userRepository.count();
+        int idx = (int)(Math.random()*q);
+        Page<User> randomUsers = userRepository.findAll(PageRequest.of(idx, 3));
+        List<User> users = randomUsers.getContent();
+        List<UserGenericDTO> FinalResult = new ArrayList<UserGenericDTO>();
+        for(User pagedUser: users)
+        {
+            if(!userFollows(owner, pagedUser) && owner.getId() != pagedUser.getId())
+                FinalResult.add(toUserGenericDTO(pagedUser, owner));
+        }
+        return FinalResult;
     }
 
     //**********************/Converters
@@ -192,6 +226,23 @@ public class UserLogicHandler
         DTO.created_at = entity.getCreated_at();
         DTO.username = entity.getUsername();
         return DTO;
+    }
+
+    protected UserGenericDTO toUserGenericDTO(User entity, User owner)
+    {
+        UserGenericDTO DTO = new UserGenericDTO();
+        DTO.id = entity.getId();
+        DTO.avatar = entity.getAvatar();
+        DTO.created_at = entity.getCreated_at();
+        DTO.username = entity.getUsername();
+        DTO.isFollowing = userFollows(owner, entity);
+        return DTO;
+    }
+
+    protected boolean userFollows(User owner, User returnedUser)
+    {
+        Optional<Follow> optional = owner.getFollowing().stream().filter(follow -> follow.getTo().getId() == returnedUser.getId()).findFirst();
+        return !optional.isEmpty();
     }
 
     protected UserMeDTO toUserMeDTO(User entity)
