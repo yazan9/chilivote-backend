@@ -1,16 +1,19 @@
 package chilivote.LogicHandlers;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import chilivote.Entities.Answer;
 import chilivote.Entities.Chilivote;
 import chilivote.Entities.Follow;
 import chilivote.Entities.User;
-import chilivote.Entities.Vote;
 import chilivote.Exceptions.ChilivoteNotFoundException;
 import chilivote.Exceptions.ForbiddenOperationException;
 import chilivote.Exceptions.UserNotFoundException;
@@ -19,6 +22,7 @@ import chilivote.Models.DTOs.AnswerVoteDTO;
 import chilivote.Models.DTOs.ChilivoteDTOBE;
 import chilivote.Models.DTOs.ChilivoteDTOUI;
 import chilivote.Models.DTOs.ChilivoteDTOUIUpdate;
+import chilivote.Models.DTOs.ChilivoteRandomDTO;
 import chilivote.Models.DTOs.ChilivoteVotableDTO;
 import chilivote.Models.DTOs.MyChilivoteDTO;
 import chilivote.Repositories.ChilivoteRepository;
@@ -76,6 +80,62 @@ public class ChilivoteLogicHandler
             }
         }
         return Result;
+    }
+
+    public List<ChilivoteRandomDTO> GetRandomFeed(String token)
+    {
+        Integer id = jwtTokenUtil.getIdFromToken(token);
+        
+        User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(id));
+
+        Long q = chilivoteRepository.count();
+        int idx = (int)(Math.random()*q);
+        Page<Chilivote> randomChilivotes = chilivoteRepository.findAll(PageRequest.of(idx, 4));
+        List<Chilivote> chilivotes = randomChilivotes.getContent();
+
+        //returning default results
+        if(chilivotes.size() == 0){
+            Iterable<Chilivote> iterables = chilivoteRepository.findAll();
+            chilivotes = new ArrayList<Chilivote>();
+            for(Chilivote c: iterables)
+            {
+                chilivotes.add(c);
+            }
+        }
+
+        List<ChilivoteRandomDTO> FinalResult = new ArrayList<ChilivoteRandomDTO>();
+        for(Chilivote pagedChilivote: chilivotes)
+        {
+            if(user.getId() != pagedChilivote.getUser().getId())
+                FinalResult.add(this.ToChilivoteRandomDTO(pagedChilivote, user));
+        }
+        return FinalResult;
+    }
+
+    public List<ChilivoteRandomDTO> GetTrendingFeed(String token)
+    {
+        Integer id = jwtTokenUtil.getIdFromToken(token);
+        
+        User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(id));
+
+        Iterable<Chilivote> iterables = chilivoteRepository.findAll();
+        List<Chilivote> chilivotes = new ArrayList<Chilivote>();
+        for(Chilivote c: iterables)
+        {
+            chilivotes.add(c);
+        }
+
+        Collections.sort(chilivotes, compareByVotes);
+
+        List<ChilivoteRandomDTO> FinalResult = new ArrayList<ChilivoteRandomDTO>();
+        for(Chilivote chilivote: chilivotes)
+        {
+            if(user.getId() != chilivote.getUser().getId())
+                FinalResult.add(this.ToChilivoteRandomDTO(chilivote, user));
+        }
+        return FinalResult;
     }
 
     public ChilivoteDTOBE CreateChilivote(ChilivoteDTOUI DTO, String token)
@@ -224,4 +284,40 @@ public class ChilivoteLogicHandler
 
         return DTO;
     }
+
+    protected ChilivoteRandomDTO ToChilivoteRandomDTO(Chilivote entity, User user)
+    {
+        ChilivoteRandomDTO DTO = new ChilivoteRandomDTO();
+        List<Answer> answers = new ArrayList<Answer>(entity.getAnswers());
+        
+        DTO.answerLeft = new AnswerVoteDTO();
+        DTO.answerLeft.url = answers.get(0).getUrl();
+        DTO.answerLeft.votes = answers.get(0).getVotes().size();
+        DTO.answerLeft.id = answers.get(0).getId();
+
+        DTO.answerRight = new AnswerVoteDTO();
+        DTO.answerRight.url = answers.get(1).getUrl();
+        DTO.answerRight.votes = answers.get(1).getVotes().size();
+        DTO.answerRight.id = answers.get(1).getId();
+
+        DTO.title = entity.getTitle();
+        DTO.created_at = entity.getCreated_at();
+        DTO.id = entity.getId();
+        DTO.username = entity.getUser().getUsername();
+        DTO.userId = entity.getUser().getId();
+
+        DTO.isFollowing = !user.getFollowing().stream().filter(u -> 
+        u.getTo().getId() == entity.getUser().getId())
+        .findFirst().isEmpty();
+
+        return DTO;
+    }
+
+    Comparator<Chilivote> compareByVotes = new Comparator<Chilivote>(){
+        @Override
+        public int compare(Chilivote o1, Chilivote o2) {
+            return ((Integer)(o1.getVotes().size())).compareTo((Integer)(o2.getVotes().size()));
+        }
+    };
 }
+

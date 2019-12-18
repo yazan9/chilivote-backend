@@ -2,6 +2,8 @@ package chilivote.Repositories;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 import chilivote.Entities.Chilivote;
@@ -11,4 +13,5 @@ import chilivote.Entities.Chilivote;
 
 public interface ChilivoteRepository extends CrudRepository<Chilivote, Integer> {
     List<Chilivote> findByUserId(Integer id);
+    Page<Chilivote> findAll(Pageable pageable);
 }

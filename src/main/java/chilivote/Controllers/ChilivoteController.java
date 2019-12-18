@@ -19,6 +19,7 @@ import chilivote.LogicHandlers.ChilivoteLogicHandler;
 import chilivote.Models.DTOs.ChilivoteDTOBE;
 import chilivote.Models.DTOs.ChilivoteDTOUI;
 import chilivote.Models.DTOs.ChilivoteDTOUIUpdate;
+import chilivote.Models.DTOs.ChilivoteRandomDTO;
 import chilivote.Models.DTOs.ChilivoteVotableDTO;
 import chilivote.Models.DTOs.MyChilivoteDTO;
 import chilivote.Repositories.ChilivoteRepository;
@@ -56,6 +57,20 @@ public class ChilivoteController
     {
         return new ChilivoteLogicHandler(chilivoteRepository, jwtTokenUtil, userRepository).
         GetFeed(token);
+    }
+
+    @GetMapping(path="/random_feed")
+    public @ResponseBody Iterable<ChilivoteRandomDTO> RandomFeed(@RequestHeader("Authorization") String token)
+    {
+        return new ChilivoteLogicHandler(chilivoteRepository, jwtTokenUtil, userRepository).
+        GetRandomFeed(token);
+    }
+
+    @GetMapping(path="/trending_feed")
+    public @ResponseBody Iterable<ChilivoteRandomDTO> TrendingFeed(@RequestHeader("Authorization") String token)
+    {
+        return new ChilivoteLogicHandler(chilivoteRepository, jwtTokenUtil, userRepository).
+        GetTrendingFeed(token);
     }
 
     @PostMapping(path="/add")
