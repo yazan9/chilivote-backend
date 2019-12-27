@@ -1,6 +1,9 @@
 package chilivote.LogicHandlers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -12,6 +15,7 @@ import chilivote.Exceptions.AnswerNotFoundException;
 import chilivote.Exceptions.DuplicateVoteException;
 import chilivote.Exceptions.UserNotFoundException;
 import chilivote.JWT.JwtTokenUtil;
+import chilivote.Models.DTOs.AnswerVotePairDTO;
 import chilivote.Repositories.AnswerRepository;
 import chilivote.Repositories.UserRepository;
 import chilivote.Repositories.VoteRepository;
@@ -34,6 +38,26 @@ public class VoteLogicHandler
 
     public String vote(Integer answerId, String token)
     {
+        doVote(answerId, token);  
+        return "ok";
+    }
+
+    public List<AnswerVotePairDTO> voteAndGetAnswers(Integer answerId, String token)
+    {
+        List<AnswerVotePairDTO> AnswerVotePairs = new ArrayList<AnswerVotePairDTO>();
+        Chilivote chilivote = doVote(answerId, token);
+        Set<Answer> answers = chilivote.getAnswers();
+        for(Answer answer : answers){
+            AnswerVotePairDTO dto = new AnswerVotePairDTO();
+            dto.answerId = answer.getId();
+            dto.votes = answer.getVotes().size();
+            AnswerVotePairs.add(dto);
+        }       
+        
+        return AnswerVotePairs;
+    }
+
+    private Chilivote doVote(Integer answerId, String token){
         Integer userId = jwtTokenUtil.getIdFromToken(token);
         
         User user = userRepository.findById(userId)
@@ -70,8 +94,7 @@ public class VoteLogicHandler
         {
             throw new DuplicateVoteException();
         }
-    
-        return "ok";
+        return chilivote;
     }
 
     public String unvote(Integer answerId, String token)

@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -111,6 +113,47 @@ public class ChilivoteLogicHandler
                 FinalResult.add(this.ToChilivoteRandomDTO(pagedChilivote, user));
         }
         return FinalResult;
+    }
+
+    public List<ChilivoteVotableDTO> GetFireChilivote(String token)
+    {
+        Integer id = jwtTokenUtil.getIdFromToken(token);
+        
+        User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(id));
+
+        Long q = chilivoteRepository.count();
+        int idx = (int)(Math.random()*q);
+        Page<Chilivote> randomChilivotes = chilivoteRepository.findAll(PageRequest.of(idx, 4));
+        List<Chilivote> chilivotes = randomChilivotes.getContent();
+
+        //returning default results
+        if(chilivotes.size() == 0){
+            Iterable<Chilivote> iterables = chilivoteRepository.findAll();
+            chilivotes = new ArrayList<Chilivote>();
+            for(Chilivote c: iterables)
+            {
+                chilivotes.add(c);
+            }
+        }
+
+        //get voted ids
+        Set<Integer> VotedChilivoteIds = user.getVotes().stream().
+        map(vote -> vote.getChilivote().getId()).collect(Collectors.toSet());
+
+        //filter chilivotes by 2 conditions
+        List<Chilivote> filteredChilivotes = chilivotes.stream().filter(chilivote -> 
+            chilivote.getUser().getId() != user.getId() &&
+            !VotedChilivoteIds.contains(chilivote.getId())
+        ).collect(Collectors.toList());
+
+        List<ChilivoteVotableDTO> Result = new ArrayList<ChilivoteVotableDTO>();
+
+        for(Chilivote chilivote: filteredChilivotes)
+        {
+            Result.add(this.ToChilivoteVotableDTO(chilivote, user));
+        }
+        return Result;
     }
 
     public List<ChilivoteRandomDTO> GetTrendingFeed(String token)

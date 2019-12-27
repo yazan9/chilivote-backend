@@ -1,5 +1,7 @@
 package chilivote.Controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -71,6 +73,13 @@ public class ChilivoteController
     {
         return new ChilivoteLogicHandler(chilivoteRepository, jwtTokenUtil, userRepository).
         GetTrendingFeed(token);
+    }
+
+    @GetMapping(path="/fire_chilivote")
+    public @ResponseBody List<ChilivoteVotableDTO> FireChilivote(@RequestHeader("Authorization") String token)
+    {
+        return new ChilivoteLogicHandler(chilivoteRepository, jwtTokenUtil, userRepository).
+        GetFireChilivote(token);
     }
 
     @PostMapping(path="/add")

@@ -1,5 +1,7 @@
 package chilivote.Controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import chilivote.JWT.JwtTokenUtil;
 import chilivote.LogicHandlers.VoteLogicHandler;
+import chilivote.Models.DTOs.AnswerVotePairDTO;
 import chilivote.Repositories.AnswerRepository;
 import chilivote.Repositories.UserRepository;
 import chilivote.Repositories.VoteRepository;
@@ -38,6 +41,13 @@ public class VoteController
     {
         new VoteLogicHandler(jwtTokenUtil, userRepository, answerRepository, voteRepository).vote(id, token);
     } 
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(path="/vote_return/{id}")
+    public @ResponseBody List<AnswerVotePairDTO> voteAndGetAnswers(@RequestHeader("Authorization") String token, @PathVariable Integer id)
+    {
+        return new VoteLogicHandler(jwtTokenUtil, userRepository, answerRepository, voteRepository).voteAndGetAnswers(id, token);
+    }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path="/unvote/{id}")
