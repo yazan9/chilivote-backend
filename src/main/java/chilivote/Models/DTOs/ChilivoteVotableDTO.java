@@ -10,4 +10,6 @@ public class ChilivoteVotableDTO
     public AnswerVoteDTO answerRight;
     public LocalDateTime created_at;
     public String username;
+    public Integer userId;
+    public boolean isFollowing;
 }

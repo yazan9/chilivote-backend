@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,7 +23,6 @@ import chilivote.Models.DTOs.AnswerVoteDTO;
 import chilivote.Models.DTOs.ChilivoteDTOBE;
 import chilivote.Models.DTOs.ChilivoteDTOUI;
 import chilivote.Models.DTOs.ChilivoteDTOUIUpdate;
-import chilivote.Models.DTOs.ChilivoteRandomDTO;
 import chilivote.Models.DTOs.ChilivoteVotableDTO;
 import chilivote.Models.DTOs.MyChilivoteDTO;
 import chilivote.Repositories.ChilivoteRepository;
@@ -84,7 +82,7 @@ public class ChilivoteLogicHandler
         return Result;
     }
 
-    public List<ChilivoteRandomDTO> GetRandomFeed(String token)
+    public List<ChilivoteVotableDTO> GetRandomFeed(String token)
     {
         Integer id = jwtTokenUtil.getIdFromToken(token);
         
@@ -106,11 +104,11 @@ public class ChilivoteLogicHandler
             }
         }
 
-        List<ChilivoteRandomDTO> FinalResult = new ArrayList<ChilivoteRandomDTO>();
+        List<ChilivoteVotableDTO> FinalResult = new ArrayList<ChilivoteVotableDTO>();
         for(Chilivote pagedChilivote: chilivotes)
         {
             if(user.getId() != pagedChilivote.getUser().getId())
-                FinalResult.add(this.ToChilivoteRandomDTO(pagedChilivote, user));
+                FinalResult.add(this.ToChilivoteVotableDTO(pagedChilivote, user));
         }
         return FinalResult;
     }
@@ -156,7 +154,7 @@ public class ChilivoteLogicHandler
         return Result;
     }
 
-    public List<ChilivoteRandomDTO> GetTrendingFeed(String token)
+    public List<ChilivoteVotableDTO> GetTrendingFeed(String token)
     {
         Integer id = jwtTokenUtil.getIdFromToken(token);
         
@@ -172,11 +170,11 @@ public class ChilivoteLogicHandler
 
         Collections.sort(chilivotes, compareByVotes);
 
-        List<ChilivoteRandomDTO> FinalResult = new ArrayList<ChilivoteRandomDTO>();
+        List<ChilivoteVotableDTO> FinalResult = new ArrayList<ChilivoteVotableDTO>();
         for(Chilivote chilivote: chilivotes)
         {
             if(user.getId() != chilivote.getUser().getId())
-                FinalResult.add(this.ToChilivoteRandomDTO(chilivote, user));
+                FinalResult.add(this.ToChilivoteVotableDTO(chilivote, user));
         }
         return FinalResult;
     }
@@ -318,29 +316,6 @@ public class ChilivoteLogicHandler
         DTO.answerRight.votes = answers.get(1).getVotes().size();
         DTO.answerRight.voted = !answers.get(1).getVotes().stream().filter((vote) -> 
         vote.getUser().getId() == user.getId()).findFirst().isEmpty();
-        DTO.answerRight.id = answers.get(1).getId();
-
-        DTO.title = entity.getTitle();
-        DTO.created_at = entity.getCreated_at();
-        DTO.id = entity.getId();
-        DTO.username = entity.getUser().getUsername();
-
-        return DTO;
-    }
-
-    protected ChilivoteRandomDTO ToChilivoteRandomDTO(Chilivote entity, User user)
-    {
-        ChilivoteRandomDTO DTO = new ChilivoteRandomDTO();
-        List<Answer> answers = new ArrayList<Answer>(entity.getAnswers());
-        
-        DTO.answerLeft = new AnswerVoteDTO();
-        DTO.answerLeft.url = answers.get(0).getUrl();
-        DTO.answerLeft.votes = answers.get(0).getVotes().size();
-        DTO.answerLeft.id = answers.get(0).getId();
-
-        DTO.answerRight = new AnswerVoteDTO();
-        DTO.answerRight.url = answers.get(1).getUrl();
-        DTO.answerRight.votes = answers.get(1).getVotes().size();
         DTO.answerRight.id = answers.get(1).getId();
 
         DTO.title = entity.getTitle();
