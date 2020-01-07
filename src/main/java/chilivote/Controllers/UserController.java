@@ -19,8 +19,6 @@ import chilivote.Entities.User;
 import chilivote.JWT.JwtResponse;
 import chilivote.JWT.JwtTokenUtil;
 import chilivote.LogicHandlers.UserLogicHandler;
-import chilivote.Models.DTOs.FollowerDTO;
-import chilivote.Models.DTOs.FollowingDTO;
 import chilivote.Models.DTOs.UserGenericDTO;
 import chilivote.Models.Requests.FBTokenRequest;
 import chilivote.Repositories.FollowRepository;
@@ -57,13 +55,13 @@ public class UserController
     }
 
     @GetMapping(path="/followers")
-    public @ResponseBody List<FollowerDTO> followers(@RequestHeader("Authorization") String token)
+    public @ResponseBody List<UserGenericDTO> followers(@RequestHeader("Authorization") String token)
     {
         return new UserLogicHandler(userRepository, jwtTokenUtil).getFollowers(token);
     }
 
     @GetMapping(path="/following")
-    public @ResponseBody List<FollowingDTO> following(@RequestHeader("Authorization") String token)
+    public @ResponseBody List<UserGenericDTO> following(@RequestHeader("Authorization") String token)
     {
         return new UserLogicHandler(userRepository, jwtTokenUtil).getFollowing(token);
     }

@@ -25,8 +25,6 @@ import chilivote.Exceptions.UnknownErrorException;
 import chilivote.Exceptions.UserNotFoundException;
 import chilivote.JWT.JwtTokenUtil;
 import chilivote.Models.FacebookProfile;
-import chilivote.Models.DTOs.FollowerDTO;
-import chilivote.Models.DTOs.FollowingDTO;
 import chilivote.Models.DTOs.UserGenericDTO;
 import chilivote.Models.DTOs.UserMeDTO;
 import chilivote.Repositories.FollowRepository;
@@ -143,24 +141,25 @@ public class UserLogicHandler
         return "ok";
     }
 
-    public List<FollowerDTO> getFollowers(String token)
+    public List<UserGenericDTO> getFollowers(String token)
     {
         Integer user_id = jwtTokenUtil.getIdFromToken(token);
         User user = userRepository.findById(user_id)
         .orElseThrow(() -> new UserNotFoundException(user_id));
 
         Set<Follow> set = user.getFollowers();
-        return toFollowerDTO(set);
+        
+        return toUserGenericDTOList(set, user, Relationship.from);
     }
 
-    public List<FollowingDTO> getFollowing(String token)
+    public List<UserGenericDTO> getFollowing(String token)
     {
         Integer user_id = jwtTokenUtil.getIdFromToken(token);
         User user = userRepository.findById(user_id)
         .orElseThrow(() -> new UserNotFoundException(user_id));
 
         Set<Follow> set = user.getFollowing();
-        return toFollowingDTO(set);
+        return toUserGenericDTOList(set, user, Relationship.to);
     }
 
     public List<UserGenericDTO> getRandomUsers(String token)
@@ -177,46 +176,12 @@ public class UserLogicHandler
         for(User pagedUser: users)
         {
             if(!userFollows(owner, pagedUser) && owner.getId() != pagedUser.getId())
-                FinalResult.add(toUserGenericDTO(pagedUser, owner));
+                FinalResult.add(toUserGenericDTO(pagedUser, owner, false));
         }
         return FinalResult;
     }
 
-    //**********************/Converters
-
-    protected List<FollowingDTO> toFollowingDTO(Set<Follow> entities)
-    {
-        List<FollowingDTO> FollowingUsers = new ArrayList<FollowingDTO>();
-
-        for(Follow entity : entities)
-        {
-            FollowingDTO DTO = new FollowingDTO();
-            DTO.id = entity.getTo().getId();
-            DTO.username = entity.getTo().getUsername();
-            DTO.avatar = entity.getTo().getAvatar();
-            DTO.created_at = entity.getTo().getCreated_at();
-
-            FollowingUsers.add(DTO);
-        }
-        return FollowingUsers;
-    }
-
-    protected List<FollowerDTO> toFollowerDTO(Set<Follow> entities)
-    {
-        List<FollowerDTO> Followers = new ArrayList<FollowerDTO>();
-
-        for(Follow entity : entities)
-        {
-            FollowerDTO DTO = new FollowerDTO();
-            DTO.id = entity.getTo().getId();
-            DTO.username = entity.getTo().getUsername();
-            DTO.avatar = entity.getTo().getAvatar();
-            DTO.created_at = entity.getTo().getCreated_at();
-
-            Followers.add(DTO);
-        }
-        return Followers;
-    }
+    //**********************/Converters /*************************//
 
     protected UserGenericDTO toUserGenericDTO(User entity)
     {
@@ -228,15 +193,25 @@ public class UserLogicHandler
         return DTO;
     }
 
-    protected UserGenericDTO toUserGenericDTO(User entity, User owner)
+    protected UserGenericDTO toUserGenericDTO(User entity, User owner, boolean setFollowingToTrue)
     {
-        UserGenericDTO DTO = new UserGenericDTO();
-        DTO.id = entity.getId();
-        DTO.avatar = entity.getAvatar();
-        DTO.created_at = entity.getCreated_at();
-        DTO.username = entity.getUsername();
-        DTO.isFollowing = userFollows(owner, entity);
+        UserGenericDTO DTO = toUserGenericDTO(entity);
+        DTO.isFollowing = setFollowingToTrue ? true : userFollows(owner, entity);
         return DTO;
+    }
+
+    protected List<UserGenericDTO> toUserGenericDTOList(Set<Follow> set, User owner, Relationship relationship){
+        List<UserGenericDTO> FinalResult = new ArrayList<UserGenericDTO>();
+        for(Follow follow:set){
+            User target = relationship == Relationship.to ? follow.getTo() : follow.getFrom();
+            FinalResult.add(toUserGenericDTO(target, owner, relationship == Relationship.to));
+        }
+        return FinalResult;
+    }
+
+    protected enum Relationship{
+        to,
+        from
     }
 
     protected boolean userFollows(User owner, User returnedUser)
