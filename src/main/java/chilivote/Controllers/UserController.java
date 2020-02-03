@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -64,6 +65,12 @@ public class UserController
     public @ResponseBody List<UserGenericDTO> following(@RequestHeader("Authorization") String token)
     {
         return new UserLogicHandler(userRepository, jwtTokenUtil).getFollowing(token);
+    }
+
+    @GetMapping(path="/search")
+    public @ResponseBody List<UserGenericDTO> search(@RequestHeader("Authorization") String token, @RequestParam String q)
+    {
+        return new UserLogicHandler(userRepository, jwtTokenUtil).search(token, q);
     }
 
     @GetMapping(path="/suggested_users")

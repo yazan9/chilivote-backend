@@ -141,6 +141,18 @@ public class UserLogicHandler
         return "ok";
     }
 
+    public List<UserGenericDTO> search(String token, String query)
+    {
+        Integer user_id = jwtTokenUtil.getIdFromToken(token);
+
+        userRepository.findById(user_id)
+        .orElseThrow(() -> new UserNotFoundException(user_id));
+
+        List<User> results = userRepository.search(query);
+        
+        return toUserGenericDTOList(results);
+    }
+
     public List<UserGenericDTO> getFollowers(String token)
     {
         Integer user_id = jwtTokenUtil.getIdFromToken(token);
@@ -198,6 +210,16 @@ public class UserLogicHandler
         UserGenericDTO DTO = toUserGenericDTO(entity);
         DTO.isFollowing = setFollowingToTrue ? true : userFollows(owner, entity);
         return DTO;
+    }
+
+    protected List<UserGenericDTO> toUserGenericDTOList(List<User> entities)
+    {
+        List<UserGenericDTO> finalResult = new ArrayList<UserGenericDTO>();
+        for(User entity:entities){
+            finalResult.add(toUserGenericDTO(entity));
+        }
+
+        return finalResult;
     }
 
     protected List<UserGenericDTO> toUserGenericDTOList(Set<Follow> set, User owner, Relationship relationship){
