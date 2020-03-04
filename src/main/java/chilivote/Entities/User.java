@@ -2,6 +2,7 @@ package chilivote.Entities;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -11,6 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,7 +24,7 @@ public class User implements Serializable
     private static final long serialVersionUID = -748956247024967638L;
     
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String username;
@@ -40,7 +42,22 @@ public class User implements Serializable
     @UpdateTimestamp
     private LocalDateTime updated_at;
 
+    @ManyToOne
+    private Role role;
+
     //Getters and Setters
+
+    public List<PermissionRole> getPermissions(){
+        return this.role.getPermissions();
+    }
+
+    public Role getRole(){
+        return role;
+    }
+
+    public void setRole(Role role){
+        this.role = role;
+    }
 
     public Integer getId()
     {

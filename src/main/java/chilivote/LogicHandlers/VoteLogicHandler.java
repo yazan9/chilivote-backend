@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Component;
 
 import chilivote.Entities.Answer;
 import chilivote.Entities.Chilivote;
@@ -20,21 +22,23 @@ import chilivote.Repositories.AnswerRepository;
 import chilivote.Repositories.UserRepository;
 import chilivote.Repositories.VoteRepository;
 
+@Component
 public class VoteLogicHandler
 {
+    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
     private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
     private AnswerRepository answerRepository;
+
+    @Autowired
     private VoteRepository voteRepository;
 
-    public VoteLogicHandler(
-        JwtTokenUtil jwtTokenUtil, UserRepository userRepository, AnswerRepository answerRepository, VoteRepository voteRepository)
-    {
-        this.answerRepository = answerRepository;
-        this.jwtTokenUtil = jwtTokenUtil;
-        this.userRepository = userRepository;
-        this.voteRepository = voteRepository;
-    }
+    @Autowired
+    RoleLogicHandler roleLogicHandler;
 
     public String vote(Integer answerId, String token)
     {
@@ -89,6 +93,8 @@ public class VoteLogicHandler
 
         try{
             answerRepository.save(answer);
+            this.roleLogicHandler.updateRole(user);
+            this.roleLogicHandler.updateRole(answer.getUser());
         }
         catch(DataIntegrityViolationException e)
         {
@@ -111,6 +117,8 @@ public class VoteLogicHandler
         answer.getVotes().remove(vote);
 
         answerRepository.save(answer);
+        this.roleLogicHandler.updateRole(user);
+        this.roleLogicHandler.updateRole(answer.getUser());
     
         return "ok";
     }

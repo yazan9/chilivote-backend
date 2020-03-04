@@ -73,6 +73,7 @@ public class JwtTokenUtil implements Serializable {
         claims.put("username", user.getUsername());
         claims.put("id", user.getId());
         claims.put("email", user.getEmail());
+        claims.put("role", user.getRole().getName());
         return Jwts.builder().setClaims(claims).setSubject(user.getEmail()).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();

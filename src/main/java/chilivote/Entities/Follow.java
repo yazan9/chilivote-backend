@@ -15,7 +15,7 @@ public class Follow implements Serializable
     private static final long serialVersionUID = 8495817802073010928L;
     
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @ManyToOne

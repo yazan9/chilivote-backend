@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import chilivote.Entities.User;
 import chilivote.JWT.JwtResponse;
-import chilivote.JWT.JwtTokenUtil;
 import chilivote.LogicHandlers.UserLogicHandler;
 import chilivote.Models.DTOs.UserGenericDTO;
 import chilivote.Models.Requests.FBTokenRequest;
@@ -36,12 +35,12 @@ public class UserController
     @Autowired //for repository auto-generation
     private FollowRepository followRepository;
     @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    private UserLogicHandler userLogicHandler;
     
     @PostMapping(path="/login")
     public @ResponseBody ResponseEntity<?> Login(@RequestBody FBTokenRequest FBToken) throws Exception
     {
-        return ResponseEntity.ok(new JwtResponse(new UserLogicHandler(userRepository, jwtTokenUtil).getJWTToken(FBToken.FBToken)));
+        return ResponseEntity.ok(new JwtResponse(userLogicHandler.getJWTToken(FBToken.FBToken)));
     }
 
     @GetMapping(path="/all")
@@ -52,44 +51,44 @@ public class UserController
 
     @GetMapping("/{id}")
     public @ResponseBody UserGenericDTO one(@PathVariable Integer id) {
-        return new UserLogicHandler(userRepository, jwtTokenUtil).getUserGenericInformation(id);
+        return userLogicHandler.getUserGenericInformation(id);
     }
 
     @GetMapping(path="/followers")
     public @ResponseBody List<UserGenericDTO> followers(@RequestHeader("Authorization") String token)
     {
-        return new UserLogicHandler(userRepository, jwtTokenUtil).getFollowers(token);
+        return userLogicHandler.getFollowers(token);
     }
 
     @GetMapping(path="/following")
     public @ResponseBody List<UserGenericDTO> following(@RequestHeader("Authorization") String token)
     {
-        return new UserLogicHandler(userRepository, jwtTokenUtil).getFollowing(token);
+        return userLogicHandler.getFollowing(token);
     }
 
     @GetMapping(path="/search")
     public @ResponseBody List<UserGenericDTO> search(@RequestHeader("Authorization") String token, @RequestParam String q)
     {
-        return new UserLogicHandler(userRepository, jwtTokenUtil).search(token, q);
+        return userLogicHandler.search(token, q);
     }
 
     @GetMapping(path="/suggested_users")
     public @ResponseBody List<UserGenericDTO> suggestedUsers(@RequestHeader("Authorization") String token)
     {
-        return new UserLogicHandler(userRepository, jwtTokenUtil).getRandomUsers(token);
+        return userLogicHandler.getRandomUsers(token);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path="/follow/{id}")
     public @ResponseBody void follow(@RequestHeader("Authorization") String token, @PathVariable Integer id)
     {
-        new UserLogicHandler(userRepository, jwtTokenUtil).follow(id, token, followRepository);
+        userLogicHandler.follow(id, token, followRepository);
     } 
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path="/unfollow/{id}")
     public @ResponseBody void unfollow(@RequestHeader("Authorization") String token, @PathVariable Integer id)
     {
-        new UserLogicHandler(userRepository, jwtTokenUtil).unfollow(id, token, followRepository);
+        userLogicHandler.unfollow(id, token, followRepository);
     } 
 }

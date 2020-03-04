@@ -20,7 +20,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Answer
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String title;

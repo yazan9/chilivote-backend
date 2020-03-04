@@ -20,7 +20,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Chilivote
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String title;

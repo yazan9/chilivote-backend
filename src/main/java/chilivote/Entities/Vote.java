@@ -20,7 +20,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Vote
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @CreationTimestamp

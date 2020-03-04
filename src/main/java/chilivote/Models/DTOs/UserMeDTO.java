@@ -9,4 +9,5 @@ public class UserMeDTO
     public String avatar;
     public LocalDateTime created_at;
     public String email;  
+    public String role;
 }

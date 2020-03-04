@@ -8,11 +8,13 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -25,21 +27,27 @@ import chilivote.Exceptions.UnknownErrorException;
 import chilivote.Exceptions.UserNotFoundException;
 import chilivote.JWT.JwtTokenUtil;
 import chilivote.Models.FacebookProfile;
+import chilivote.Models.Constants.ROLES;
 import chilivote.Models.DTOs.UserGenericDTO;
 import chilivote.Models.DTOs.UserMeDTO;
 import chilivote.Repositories.FollowRepository;
+import chilivote.Repositories.RolesRepository;
 import chilivote.Repositories.UserRepository;
 
+@Component
 public class UserLogicHandler
 {
-    private UserRepository userRepository;
-    private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private RoleLogicHandler roleLogicHandler;
 
-    public UserLogicHandler(UserRepository userRepository, JwtTokenUtil jwtTokenUtil)
-    {
-        this.userRepository = userRepository;
-        this.jwtTokenUtil = jwtTokenUtil;
-    }
+    @Autowired
+    private RolesRepository rolesRepository;
+
+    @Autowired 
+    private UserRepository userRepository;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     public String getJWTToken(String FBToken) throws Exception
     {
@@ -53,7 +61,10 @@ public class UserLogicHandler
 
     protected String CreateNewUser(FacebookProfile facebookProfile)
     {
-        User SavedUser = userRepository.save(ToUserEntity(facebookProfile));
+        User userEntity = ToUserEntity(facebookProfile);
+        userEntity.setRole(rolesRepository.findByName(ROLES.VIEWER));
+        User SavedUser = userRepository.save(userEntity);
+        
         return jwtTokenUtil.generateToken(SavedUser);
     }
 
@@ -109,7 +120,9 @@ public class UserLogicHandler
 
         Follow NewEntity = new Follow(Follower, Followed);
         try{
-        followRepository.save(NewEntity);
+            followRepository.save(NewEntity);
+            this.roleLogicHandler.updateRole(Follower);
+            this.roleLogicHandler.updateRole(Followed);
         }
         catch(DataIntegrityViolationException ex)
         {
@@ -138,6 +151,8 @@ public class UserLogicHandler
         throw new RelationshipNotFoundException();
         //.orElseThrow(() -> new RelationshipNotFoundException());
         followRepository.delete(ToDeleteEntity);
+        this.roleLogicHandler.updateRole(Follower);
+        this.roleLogicHandler.updateRole(Followed);
         return "ok";
     }
 
@@ -250,6 +265,7 @@ public class UserLogicHandler
         DTO.created_at = entity.getCreated_at();
         DTO.username = entity.getUsername();
         DTO.email = entity.getEmail();
+        DTO.role = entity.getRole().getName();
         return DTO;
     }
 
