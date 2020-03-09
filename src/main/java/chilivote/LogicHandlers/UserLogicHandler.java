@@ -170,12 +170,18 @@ public class UserLogicHandler
     {
         Integer user_id = jwtTokenUtil.getIdFromToken(token);
 
-        userRepository.findById(user_id)
+        User owner = userRepository.findById(user_id)
         .orElseThrow(() -> new UserNotFoundException(user_id));
 
         List<User> results = userRepository.search(query);
-        
-        return toUserGenericDTOList(results);
+
+        List<UserGenericDTO> FinalResult = new ArrayList<UserGenericDTO>();
+        for(User u: results)
+        {
+            if(!userFollows(owner, u) && owner.getId() != u.getId())
+                FinalResult.add(toUserGenericDTO(u, owner, false));
+        }
+        return FinalResult;
     }
 
     public List<UserGenericDTO> getFollowers(String token)
