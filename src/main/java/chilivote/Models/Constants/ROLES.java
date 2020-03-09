@@ -8,4 +8,5 @@ public class ROLES{
     public static String MASTER = "master";
     public static String LEGEND = "legend";
     public static String CHILIVOTER = "chilivoter";
+    public static String SUPER = "super";
 }

@@ -91,4 +91,10 @@ public class UserController
     {
         userLogicHandler.unfollow(id, token, followRepository);
     } 
+
+    @GetMapping(path="/get_role")
+    public @ResponseBody String checkRole(@RequestHeader("Authorization") String token)
+    {
+        return userLogicHandler.getRole(token);
+    }
 }

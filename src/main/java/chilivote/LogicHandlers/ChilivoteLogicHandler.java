@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Component;
 
 import chilivote.Entities.Answer;
 import chilivote.Entities.Chilivote;
@@ -28,19 +30,20 @@ import chilivote.Models.DTOs.MyChilivoteDTO;
 import chilivote.Repositories.ChilivoteRepository;
 import chilivote.Repositories.UserRepository;
 
+@Component
 public class ChilivoteLogicHandler
 {
+    @Autowired
+    private RoleLogicHandler roleLogicHandler;
+    
+    @Autowired
     private ChilivoteRepository chilivoteRepository;
-    private UserRepository userRepository;
-    private JwtTokenUtil jwtTokenUtil;
 
-    public ChilivoteLogicHandler(ChilivoteRepository chilivoteRepository, 
-    JwtTokenUtil jwtTokenUtil, UserRepository userRepository)
-    {
-        this.chilivoteRepository = chilivoteRepository;
-        this.jwtTokenUtil = jwtTokenUtil;
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     public List<MyChilivoteDTO> GetMyChilivotes(String token)
     {
@@ -189,7 +192,11 @@ public class ChilivoteLogicHandler
 
         Chilivote SavedEntity = chilivoteRepository.save(entity);
 
-        return ToChilivoteDTOBE(SavedEntity);
+        ChilivoteDTOBE result = ToChilivoteDTOBE(SavedEntity);
+
+        result.role = this.roleLogicHandler.updateRole(user);
+
+        return result;
     }
 
     public ChilivoteDTOBE UpdateChilivote(ChilivoteDTOUIUpdate DTO, String token)

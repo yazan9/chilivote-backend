@@ -108,6 +108,15 @@ public class UserLogicHandler
         return toUserMeDTO(user);
     }
 
+    public String getRole(String token)
+    {
+        Integer id = jwtTokenUtil.getIdFromToken(token);
+        User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(id));
+
+        return user.getRole().getName();
+    }
+
     public String follow(Integer followed_id, String token, FollowRepository followRepository)
     {
         Integer follower_id = jwtTokenUtil.getIdFromToken(token);
@@ -119,9 +128,10 @@ public class UserLogicHandler
         .orElseThrow(() -> new UserNotFoundException(followed_id));
 
         Follow NewEntity = new Follow(Follower, Followed);
+        String newFollowerRole = null;
         try{
             followRepository.save(NewEntity);
-            this.roleLogicHandler.updateRole(Follower);
+            newFollowerRole = this.roleLogicHandler.updateRole(Follower);
             this.roleLogicHandler.updateRole(Followed);
         }
         catch(DataIntegrityViolationException ex)
@@ -133,7 +143,7 @@ public class UserLogicHandler
             throw new UnknownErrorException();
         }
     
-        return "ok";
+        return newFollowerRole;
     }
 
     public String unfollow(Integer followed_id, String token, FollowRepository followRepository)
@@ -151,9 +161,9 @@ public class UserLogicHandler
         throw new RelationshipNotFoundException();
         //.orElseThrow(() -> new RelationshipNotFoundException());
         followRepository.delete(ToDeleteEntity);
-        this.roleLogicHandler.updateRole(Follower);
+        String newFollowerRole = this.roleLogicHandler.updateRole(Follower);
         this.roleLogicHandler.updateRole(Followed);
-        return "ok";
+        return newFollowerRole;
     }
 
     public List<UserGenericDTO> search(String token, String query)

@@ -8,4 +8,5 @@ public class ChilivoteDTOBE
     public String answerLeft;
     public String answerRight;
     public LocalDateTime created_at;
+    public String role;
 }

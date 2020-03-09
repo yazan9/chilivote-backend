@@ -1,1 +1,5 @@
 INSERT INTO permissions (name) VALUES ('create_basicpolls'), ('create_hotpolls'), ('create_firepolls'), ('vote_basicpolls'), ('vote_hotpolls'), ('vote_firepolls'), ('read_basicpolls'), ('read_hotpolls'), ('read_firepolls'), ('limit_firepolls_24'), ('limit_firepolls_4'), ('limit_firepolls_2'), ('limit_firepolls_1'), ('reboost_6'), ('reboost_3'), ('reboost_1'), ('send_invite_3'), ('send_invite_6'), ('read_chilivoters'); 
+
+-- for heroku cleardb
+
+INSERT INTO permissions (id, name) VALUES (1, 'create_basicpolls'), (2, 'create_hotpolls'), (3, 'create_firepolls'), (4, 'vote_basicpolls'), (5, 'vote_hotpolls'), (6, 'vote_firepolls'), (7, 'read_basicpolls'), (8, 'read_hotpolls'), (9, 'read_firepolls'), (10, 'limit_firepolls_24'), (11, 'limit_firepolls_4'), (12, 'limit_firepolls_2'), (13, 'limit_firepolls_1'), (14, 'reboost_6'), (15, 'reboost_3'), (16, 'reboost_1'), (17, 'send_invite_3'), (18, 'send_invite_6'), (19, 'read_chilivoters'); 
