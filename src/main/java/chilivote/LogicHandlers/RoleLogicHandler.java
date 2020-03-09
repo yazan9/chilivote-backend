@@ -1,11 +1,14 @@
 package chilivote.LogicHandlers;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import chilivote.Entities.Chilivote;
 import chilivote.Entities.Role;
 import chilivote.Entities.User;
+import chilivote.Entities.Vote;
 import chilivote.Models.Constants.ROLES;
 import chilivote.Repositories.RolesRepository;
 import chilivote.Repositories.UserRepository;
@@ -31,7 +34,9 @@ public class RoleLogicHandler {
         this.peopleWhoFollowMe = user.getFollowers().size();
         this.votesOnMyPosts = 0;
         for (Chilivote chilivote : user.getChilivotes()) {
-            votesOnMyPosts += chilivote.getVotes().size();
+            Set<Vote> _votesOnMyPosts = chilivote.getVotes();
+            if(_votesOnMyPosts != null)
+                votesOnMyPosts += _votesOnMyPosts.size();
         }
 
         if(checkIfSuper())
@@ -60,7 +65,7 @@ public class RoleLogicHandler {
     }
 
     protected boolean checkIfSuper(){
-        return this.user.getRole().getName() == ROLES.SUPER;
+        return this.user.getRole().getName().equals(ROLES.SUPER);
     }
 
     protected boolean checkIfChilivoter() {
