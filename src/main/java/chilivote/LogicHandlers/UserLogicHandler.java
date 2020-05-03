@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -27,6 +28,7 @@ import chilivote.Exceptions.UnknownErrorException;
 import chilivote.Exceptions.UserNotFoundException;
 import chilivote.JWT.JwtTokenUtil;
 import chilivote.Models.FacebookProfile;
+import chilivote.Models.UserPreference;
 import chilivote.Models.Constants.ROLES;
 import chilivote.Models.DTOs.UserGenericDTO;
 import chilivote.Models.DTOs.UserMeDTO;
@@ -222,6 +224,17 @@ public class UserLogicHandler
                 FinalResult.add(toUserGenericDTO(pagedUser, owner, false));
         }
         return FinalResult;
+    }
+
+    public ResponseEntity<?> hideUser(String token, Integer id){
+        Integer user_id = jwtTokenUtil.getIdFromToken(token);
+        User owner = userRepository.findById(user_id)
+        .orElseThrow(() -> new UserNotFoundException(user_id));
+
+        UserPreference preferences = owner.getPreferences();
+        preferences.hide.add(id);
+        
+        return ResponseEntity.ok().build();
     }
 
     //**********************/Converters /*************************//

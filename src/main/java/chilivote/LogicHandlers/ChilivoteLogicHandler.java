@@ -110,7 +110,8 @@ public class ChilivoteLogicHandler
         List<ChilivoteVotableDTO> FinalResult = new ArrayList<ChilivoteVotableDTO>();
         for(Chilivote pagedChilivote: chilivotes)
         {
-            if(user.getId() != pagedChilivote.getUser().getId())
+            if(user.getId() != pagedChilivote.getUser().getId()
+            && ! user.getPreferences().hide.contains(pagedChilivote.getUser().getId()))
                 FinalResult.add(this.ToChilivoteVotableDTO(pagedChilivote, user));
         }
         return FinalResult;

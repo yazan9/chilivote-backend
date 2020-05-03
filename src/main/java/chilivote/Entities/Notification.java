@@ -8,17 +8,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "chilivote_id", "user_id" }) })
-public class Vote
-{
+@Table(name = "notifications")
+public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -26,28 +23,14 @@ public class Vote
     @CreationTimestamp
     private LocalDateTime created_at;
 
-    @UpdateTimestamp
-    private LocalDateTime updated_at;
+    private boolean read;
 
-    public Integer getId()
-    {
+    public Integer getId() {
         return id;
     }
-    
-    public LocalDateTime getUpdated_at() {
-        return updated_at;
-    }
 
-    public void setUpdated_at(LocalDateTime updated_at) {
-        this.updated_at = updated_at;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public LocalDateTime getCreated_at() {
@@ -58,6 +41,14 @@ public class Vote
         this.created_at = created_at;
     }
 
+    public boolean isRead() {
+        return read;
+    }
+
+    public void setRead(boolean read) {
+        this.read = read;
+    }
+
     public Chilivote getChilivote() {
         return chilivote;
     }
@@ -66,12 +57,12 @@ public class Vote
         this.chilivote = chilivote;
     }
 
-    public Answer getAnswer() {
-        return answer;
+    public User getUser() {
+        return user;
     }
 
-    public void setAnswer(Answer answer) {
-        this.answer = answer;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     //Navigation Properties
@@ -82,9 +73,4 @@ public class Vote
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
-
-    @ManyToOne
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Answer answer;
-    
 }

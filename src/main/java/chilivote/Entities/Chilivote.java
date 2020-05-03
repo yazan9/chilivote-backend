@@ -1,6 +1,7 @@
 package chilivote.Entities;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -84,6 +85,31 @@ public class Chilivote
         this.votes = votes;
     }
 
+    public Set<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(Set<Notification> notifications) {
+        this.notifications = notifications;
+    }
+
+    @Override
+	public boolean equals(Object o) {
+		if ( this == o ) {
+			return true;
+		}
+		if ( o == null || getClass() != o.getClass() ) {
+			return false;
+		}
+		Chilivote chilivote = (Chilivote) o;
+		return Objects.equals( id, chilivote.id );
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash( id );
+	}
+
     //Navigation Properties
     @OneToMany(mappedBy = "chilivote", orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Answer> answers;
@@ -94,4 +120,7 @@ public class Chilivote
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
+
+    @OneToMany(mappedBy = "chilivote", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<Notification> notifications;
 }

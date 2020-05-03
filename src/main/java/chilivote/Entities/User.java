@@ -15,8 +15,12 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import chilivote.Models.UserPreference;
 
 @Entity
 public class User implements Serializable
@@ -35,6 +39,8 @@ public class User implements Serializable
     private String avatar;
 
     private String facebook_id;
+
+    private String preferences;
 
     @CreationTimestamp
     private LocalDateTime created_at;
@@ -159,4 +165,35 @@ public class User implements Serializable
 
     @OneToMany(mappedBy="from", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Follow> following;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<Notification> notifications;
+
+    public UserPreference getPreferences() {
+        ObjectMapper mapper = new ObjectMapper();
+        try{
+            return mapper.readValue(this.preferences, UserPreference.class);
+        }
+        catch(Exception e){
+            return new UserPreference();
+        }
+    }
+
+    public void setPreferences(UserPreference preferences) {
+        ObjectMapper mapper = new ObjectMapper();
+        try{
+            this.preferences = mapper.writeValueAsString(preferences);
+        }
+        catch(Exception e){
+            this.preferences = "";
+        }
+    }
+
+    public Set<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(Set<Notification> notifications) {
+        this.notifications = notifications;
+    }
 }

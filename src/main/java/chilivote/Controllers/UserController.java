@@ -97,4 +97,9 @@ public class UserController
     {
         return userLogicHandler.getRole(token);
     }
+
+    @PostMapping(path="/hide/{id}")
+    public ResponseEntity<?> hide(@RequestHeader("Authorization") String token, @PathVariable Integer id){
+        return userLogicHandler.hideUser(token, id);
+    }
 }
