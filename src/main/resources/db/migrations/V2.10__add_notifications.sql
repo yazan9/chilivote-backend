@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `user_id` int NOT NULL,
   `chilivote_id` int NOT NULL,
   `created_at` datetime DEFAULT NULL,
-  `read` BOOLEAN DEFAULT 0,
+  `read` tinyint(1) DEFAULT 0,
 
   PRIMARY KEY (`id`),
   KEY `FKkwquj56nugetxobeygytlr000` (`chilivote_id`),
