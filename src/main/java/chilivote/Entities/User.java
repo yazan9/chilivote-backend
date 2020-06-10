@@ -42,6 +42,8 @@ public class User implements Serializable
 
     private String preferences;
 
+    private String password;
+
     @CreationTimestamp
     private LocalDateTime created_at;
 
@@ -148,6 +150,14 @@ public class User implements Serializable
 
     public Set<Follow> getFollowing() {
         return following;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     //Navigation Properties

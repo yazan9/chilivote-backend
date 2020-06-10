@@ -1,2 +1,0 @@
-alter table vote add unique(user_id, chilivote_id);
-alter table follow add unique(from_user_fk, to_user_fk);

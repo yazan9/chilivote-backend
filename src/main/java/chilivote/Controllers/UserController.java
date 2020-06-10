@@ -2,19 +2,23 @@ package chilivote.Controllers;
 
 import java.util.List;
 
+import chilivote.Exceptions.BadRequestException;
+import chilivote.Exceptions.DuplicateEntryException;
+import chilivote.Exceptions.UnknownErrorException;
+import chilivote.JWT.JwtTokenUtil;
+import chilivote.JWT.JwtUserDetailsService;
+import chilivote.Models.Requests.JWTRequest;
+import chilivote.Models.UserDTO;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
 import chilivote.Entities.User;
 import chilivote.JWT.JwtResponse;
@@ -36,11 +40,46 @@ public class UserController
     private FollowRepository followRepository;
     @Autowired
     private UserLogicHandler userLogicHandler;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtUserDetailsService userDetailsService;
+    @Autowired
+    private UserRepository usersRepository;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
     
     @PostMapping(path="/login")
     public @ResponseBody ResponseEntity<?> Login(@RequestBody FBTokenRequest FBToken) throws Exception
     {
         return ResponseEntity.ok(new JwtResponse(userLogicHandler.getJWTToken(FBToken.FBToken)));
+    }
+
+    @PostMapping(path="/emailLogin")
+    public @ResponseBody ResponseEntity<?> EmailLogin(@RequestBody JWTRequest authenticationRequest) throws Exception
+    {
+        doAuthenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+        final User userDetails = usersRepository.findByEmail(authenticationRequest.getEmail());
+        final String accessToken = jwtTokenUtil.generateToken(userDetails);
+        return ResponseEntity.ok(accessToken);
+    }
+
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public ResponseEntity<?> register(@RequestBody UserDTO user) throws Exception {
+        try {
+            User savedUser = userDetailsService.save(user);
+            doAuthenticate(savedUser.getEmail(), savedUser.getPassword());
+            final User userDetails = usersRepository.findByEmail(savedUser.getEmail());
+            final String accessToken = jwtTokenUtil.generateToken(userDetails);
+            return ResponseEntity.ok(accessToken);
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateEntryException("A user with the same email already exists");
+        } catch (ConstraintViolationException e) {
+            throw new BadRequestException(
+                    "Could not register the user. Please make sure that all required fields are present");
+        } catch (Exception e) {
+            throw new UnknownErrorException();
+        }
     }
 
     @GetMapping(path="/all")
@@ -101,5 +140,18 @@ public class UserController
     @PostMapping(path="/hide/{id}")
     public ResponseEntity<?> hide(@RequestHeader("Authorization") String token, @PathVariable Integer id){
         return userLogicHandler.hideUser(token, id);
+    }
+
+    private void doAuthenticate(String email, String password) throws Exception {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        } catch (DisabledException e) {
+            throw new Exception("USER_DISABLED", e);
+        } catch (BadCredentialsException e) {
+            throw new Exception("INVALID_CREDENTIALS", e);
+        }
+        catch(Exception e){
+            throw new Exception("Internal error");
+        }
     }
 }
