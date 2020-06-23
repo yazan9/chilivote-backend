@@ -61,7 +61,7 @@ public class UserController
         doAuthenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
         final User userDetails = usersRepository.findByEmail(authenticationRequest.getEmail());
         final String accessToken = jwtTokenUtil.generateToken(userDetails);
-        return ResponseEntity.ok(accessToken);
+        return ResponseEntity.ok(new JwtResponse(accessToken));
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -71,7 +71,7 @@ public class UserController
             doAuthenticate(user.getEmail(), user.getPassword());
             final User userDetails = usersRepository.findByEmail(savedUser.getEmail());
             final String accessToken = jwtTokenUtil.generateToken(userDetails);
-            return ResponseEntity.ok(accessToken);
+            return ResponseEntity.ok(new JwtResponse(accessToken));
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateEntryException("A user with the same email already exists");
         } catch (ConstraintViolationException e) {
