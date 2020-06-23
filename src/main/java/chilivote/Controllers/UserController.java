@@ -68,7 +68,7 @@ public class UserController
     public ResponseEntity<?> register(@RequestBody UserDTO user) throws Exception {
         try {
             User savedUser = userDetailsService.save(user);
-            doAuthenticate(savedUser.getEmail(), savedUser.getPassword());
+            doAuthenticate(user.getEmail(), user.getPassword());
             final User userDetails = usersRepository.findByEmail(savedUser.getEmail());
             final String accessToken = jwtTokenUtil.generateToken(userDetails);
             return ResponseEntity.ok(accessToken);
