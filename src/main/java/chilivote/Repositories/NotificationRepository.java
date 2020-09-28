@@ -1,9 +1,7 @@
 package chilivote.Repositories;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import chilivote.Entities.Notification;
+import chilivote.entities.NotificationEntity;
 
-public interface NotificationRepository extends CrudRepository<Notification, Integer> {
-
-}
+public interface NotificationRepository extends JpaRepository<NotificationEntity, Integer> {}

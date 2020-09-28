@@ -1,14 +1,13 @@
 package chilivote.Repositories;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import chilivote.Entities.Follow;
-import chilivote.Entities.User;
-import chilivote.Models.FollowId;
+import chilivote.entities.FollowEntity;
+import chilivote.entities.UserEntity;
+import chilivote.models.FollowId;
 
-// This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
-// CRUD refers Create, Read, Update, Delete
+import java.util.Optional;
 
-public interface FollowRepository extends CrudRepository<Follow, FollowId> {
-    Follow findByFromAndTo(User FromUserFk, User ToUserFk);
+public interface FollowRepository extends JpaRepository<FollowEntity, FollowId> {
+    Optional<FollowEntity> findByFromAndTo(UserEntity FromUserFk, UserEntity ToUserFk);
 }

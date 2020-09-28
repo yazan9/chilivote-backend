@@ -1,12 +1,11 @@
 package chilivote.Repositories;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import chilivote.Entities.Role;
+import chilivote.entities.RoleEntity;
 
-// This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
-// CRUD refers Create, Read, Update, Delete
+import java.util.Optional;
 
-public interface RolesRepository extends CrudRepository<Role, Long> {
-    public Role findByName(String name);
+public interface RolesRepository extends JpaRepository<RoleEntity, Long> {
+    Optional<RoleEntity> findByName(String name);
 }

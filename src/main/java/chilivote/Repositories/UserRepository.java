@@ -1,22 +1,20 @@
 package chilivote.Repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 
-import chilivote.Entities.User;;
+import chilivote.entities.UserEntity;
+import org.springframework.data.repository.query.Param;;
 
-// This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
-// CRUD refers Create, Read, Update, Delete
-
-public interface UserRepository extends CrudRepository<User, Integer> {
-    User findByEmail(String email);
-    Page<User> findAll(Pageable pageable);
+public interface UserRepository extends JpaRepository<UserEntity, Integer> {
+    Optional<UserEntity> findByEmail(String email);
+    Page<UserEntity> findAll(Pageable pageable);
 
     @Query(value = "Select * from user where username like %:q%", nativeQuery = true)
-    List<User> search(@Param("q")String query);
+    List<UserEntity> search(@Param("q")String query);
 }

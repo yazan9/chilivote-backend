@@ -1,17 +1,15 @@
 package chilivote.Repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import chilivote.Entities.Chilivote;
+import chilivote.entities.ChilivoteEntity;
 
-// This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
-// CRUD refers Create, Read, Update, Delete
-
-public interface ChilivoteRepository extends CrudRepository<Chilivote, Integer> {
-    List<Chilivote> findByUserId(Integer id);
-    Page<Chilivote> findAll(Pageable pageable);
+public interface ChilivoteRepository extends JpaRepository<ChilivoteEntity, Integer> {
+    Optional<List<ChilivoteEntity>> findByUserId(Integer id);
+    Page<ChilivoteEntity> findAll(Pageable pageable);
 }

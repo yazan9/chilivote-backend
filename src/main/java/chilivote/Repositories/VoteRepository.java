@@ -1,11 +1,6 @@
 package chilivote.Repositories;
 
-import org.springframework.data.repository.CrudRepository;
+import chilivote.entities.VoteEntity;
+import org.springframework.data.jpa.repository.JpaRepository;;
 
-import chilivote.Entities.Vote;;
-
-// This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
-// CRUD refers Create, Read, Update, Delete
-
-public interface VoteRepository extends CrudRepository<Vote, Integer> {
-}
+public interface VoteRepository extends JpaRepository<VoteEntity, Integer> {}
