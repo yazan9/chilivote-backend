@@ -39,14 +39,19 @@ public class NotificationsService {
         return toNotificationDTO(owner.getNotifications());
     }
 
-    public ResponseEntity<?> readNotification(String token, Integer notificationId) throws Exception{
+    public void createNotification(ChilivoteEntity chilivoteEntity){
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setChilivote(chilivoteEntity);
+        notificationEntity.setUser(chilivoteEntity.getUser());
+        this.notificationRepository.save(notificationEntity);
+    }
+
+    public ResponseEntity<?> readNotification(String token, Integer chilivoteId) throws Exception{
         Integer user_id = jwtTokenUtil.getIdFromToken(token);
         UserEntity owner = userRepository.findById(user_id).orElseThrow(() -> new UserNotFoundException(user_id));
-        NotificationEntity readNotification = owner.getNotifications().stream().filter(n -> n.getId() == notificationId).findFirst().orElse(null);
-        if(readNotification == null)
-            throw new NotFoundException("Notification not found");
+        List<NotificationEntity> readNotifications = owner.getNotifications().stream().filter(n -> n.getChilivote().getId() == chilivoteId).collect(Collectors.toList());
 
-        notificationRepository.delete(readNotification);
+        notificationRepository.deleteAll(readNotifications);
 
         return ResponseEntity.ok().build();
     }

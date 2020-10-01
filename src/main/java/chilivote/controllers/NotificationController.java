@@ -32,8 +32,8 @@ public class NotificationController {
     }
 
     @PostMapping(path="/delete/{id}")
-    public ResponseEntity<?> readNotification(@RequestHeader("Authorization") String token, @PathVariable Integer notificationId) throws Exception
+    public ResponseEntity<?> readNotification(@RequestHeader("Authorization") String token, @PathVariable Integer id) throws Exception
     {
-        return notificationLogicHandler.readNotification(token, notificationId);
+        return notificationLogicHandler.readNotification(token, id);
     }
 }

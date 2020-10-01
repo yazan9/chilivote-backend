@@ -29,7 +29,7 @@ public class NotificationEntity {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    private boolean read;
+    private boolean seen;
 
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)

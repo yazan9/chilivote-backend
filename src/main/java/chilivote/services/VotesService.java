@@ -38,6 +38,9 @@ public class VotesService
     private VoteRepository voteRepository;
 
     @Autowired
+    private NotificationsService notificationsService;
+
+    @Autowired
     RolesService roleLogicHandler;
 
     public String vote(Integer answerId, String token)
@@ -100,6 +103,7 @@ public class VotesService
         {
             throw new DuplicateVoteException();
         }
+        this.notificationsService.createNotification(chilivote);
         return chilivote;
     }
 
