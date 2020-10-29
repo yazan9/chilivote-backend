@@ -51,20 +51,19 @@ public class UserEntity implements Serializable
     @ManyToOne
     private RoleEntity role;
 
-    //Navigation Properties
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user")
     private List<ChilivoteEntity> chilivotes;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<AnswerEntity> answers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<VoteEntity> votes;
 
-    @OneToMany(mappedBy="to", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy="to", cascade = CascadeType.ALL)
     private List<FollowEntity> followers;
 
-    @OneToMany(mappedBy="from", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy="from", cascade = CascadeType.ALL)
     private List<FollowEntity> following;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)

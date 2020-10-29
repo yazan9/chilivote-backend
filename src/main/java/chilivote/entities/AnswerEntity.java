@@ -46,6 +46,6 @@ public class AnswerEntity
     @OnDelete(action = OnDeleteAction.CASCADE)
     private UserEntity user;
 
-    @OneToMany(mappedBy = "answer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "answer", orphanRemoval = true)
     private List<VoteEntity> votes;
 }

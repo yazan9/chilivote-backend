@@ -2,9 +2,8 @@ package chilivote.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
+import chilivote.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -13,9 +12,6 @@ import chilivote.entities.AnswerEntity;
 import chilivote.entities.ChilivoteEntity;
 import chilivote.entities.UserEntity;
 import chilivote.entities.VoteEntity;
-import chilivote.exceptions.AnswerNotFoundException;
-import chilivote.exceptions.DuplicateVoteException;
-import chilivote.exceptions.UserNotFoundException;
 import chilivote.jwt.JwtTokenUtil;
 import chilivote.models.domain.AnswerVotePairDTO;
 import chilivote.Repositories.AnswerRepository;
@@ -41,89 +37,84 @@ public class VotesService
     private NotificationsService notificationsService;
 
     @Autowired
-    RolesService roleLogicHandler;
+    RolesService rolesService;
 
-    public String vote(Integer answerId, String token)
+    public void vote(Integer answerId, String token)
     {
-        doVote(answerId, token);  
-        return "ok";
+        UserEntity userEntity = userRepository.findById(jwtTokenUtil.getIdFromToken(token)).orElseThrow(() -> new UnauthorizedException());
+        AnswerEntity answerEntity = answerRepository.findById(answerId).orElseThrow(() -> new EntityNotFoundException(answerId, "Answer"));
+        doVote(userEntity, answerEntity);
+    }
+
+    private boolean hasVotedOnChilivote(Integer userId, Integer chilivoteId){
+        return voteRepository.findByUserIdAndChilivoteId(userId, chilivoteId).orElse(null) != null;
+    }
+
+    private boolean hasVotedOnAnswer(Integer userId, Integer answerId){
+        return voteRepository.findByUserIdAndAnswerId(userId, answerId).orElse(null) != null;
+    }
+
+    private ChilivoteEntity doVote(UserEntity userEntity, AnswerEntity answerEntity){
+        ChilivoteEntity chilivoteEntity = answerEntity.getChilivote();
+
+        if(this.hasVotedOnAnswer(userEntity.getId(), answerEntity.getId()))
+            throw new DuplicateVoteException();
+
+        if(this.hasVotedOnChilivote(userEntity.getId(), chilivoteEntity.getId()))
+            this.doUnvote(userEntity, answerEntity);
+
+        VoteEntity vote = new VoteEntity();
+        vote.setAnswer(answerEntity);
+        vote.setUser(userEntity);
+        vote.setChilivote(chilivoteEntity);
+
+        try{
+            voteRepository.save(vote);
+            this.rolesService.updateRole(userEntity);
+            this.rolesService.updateRole(answerEntity.getUser());
+        }
+        catch(DataIntegrityViolationException e)
+        {
+            throw new DuplicateVoteException();
+        }
+        this.notificationsService.createNotification(chilivoteEntity);
+        return chilivoteEntity;
     }
 
     public List<AnswerVotePairDTO> voteAndGetAnswers(Integer answerId, String token)
     {
+        UserEntity userEntity = userRepository.findById(jwtTokenUtil.getIdFromToken(token)).orElseThrow(() -> new UnauthorizedException());
+        AnswerEntity answerEntity = answerRepository.findById(answerId).orElseThrow(() -> new EntityNotFoundException(answerId, "Answer"));
         List<AnswerVotePairDTO> AnswerVotePairs = new ArrayList<AnswerVotePairDTO>();
-        ChilivoteEntity chilivote = doVote(answerId, token);
+        ChilivoteEntity chilivote = doVote(userEntity, answerEntity);
         List<AnswerEntity> answerEntities = chilivote.getAnswers();
-        for(AnswerEntity answerEntity : answerEntities){
+        for(AnswerEntity answer : answerEntities){
             AnswerVotePairDTO dto = new AnswerVotePairDTO();
-            dto.answerId = answerEntity.getId();
-            dto.votes = answerEntity.getVotes().size();
+            dto.answerId = answer.getId();
+            dto.votes = answer.getVotes().size();
             AnswerVotePairs.add(dto);
         }       
         
         return AnswerVotePairs;
     }
 
-    private ChilivoteEntity doVote(Integer answerId, String token){
-        Integer userId = jwtTokenUtil.getIdFromToken(token);
-        
-        UserEntity user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
-
-        AnswerEntity answerEntity = answerRepository.findById(answerId)
-        .orElseThrow(() -> new AnswerNotFoundException(answerId));
-
-        ChilivoteEntity chilivote = answerEntity.getChilivote();
-
-        VoteEntity vote = new VoteEntity();
-        vote.setAnswer(answerEntity);
-        vote.setUser(user);
-        vote.setChilivote(chilivote);
-
-        //Check if the user has already voted
-        Optional<VoteEntity> optional = chilivote.getVotes().stream().filter(v -> v.getUser().getId() == user.getId()).findFirst();
-        if(!optional.isEmpty())
-        {
-            VoteEntity UserPrevVote = optional.get();
-            answerEntity.getVotes().remove(UserPrevVote);
-            UserPrevVote.setAnswer(null);
-            UserPrevVote.setUser(null);
-            UserPrevVote.setChilivote(null);
-            voteRepository.deleteById(UserPrevVote.getId());
-        }
-
-        answerEntity.getVotes().add(vote);
-
-        try{
-            answerRepository.save(answerEntity);
-            this.roleLogicHandler.updateRole(user);
-            this.roleLogicHandler.updateRole(answerEntity.getUser());
-        }
-        catch(DataIntegrityViolationException e)
-        {
-            throw new DuplicateVoteException();
-        }
-        this.notificationsService.createNotification(chilivote);
-        return chilivote;
+    public void unvote(Integer answerId, String token)
+    {
+        UserEntity user = userRepository.findById(jwtTokenUtil.getIdFromToken(token)).orElseThrow(() -> new UnauthorizedException());
+        AnswerEntity answerEntity = answerRepository.findById(answerId).orElseThrow(() -> new EntityNotFoundException(answerId, "Answer"));
+        doUnvote(user, answerEntity);
     }
 
-    public String unvote(Integer answerId, String token)
-    {
-        Integer userId = jwtTokenUtil.getIdFromToken(token);
-        
-        UserEntity user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
+    private void doUnvote(UserEntity userEntity, AnswerEntity answerEntity){
+        UserEntity targetUser = answerRepository.findById(answerEntity.getId()).orElseThrow(() -> new EntityNotFoundException(answerEntity.getId(), "Answer")).getUser();
+        VoteEntity voteToDelete = voteRepository.findByUserIdAndChilivoteId(userEntity.getId(), answerEntity.getChilivote().getId()).orElse(null);
 
-        AnswerEntity answerEntity = answerRepository.findById(answerId)
-        .orElseThrow(() -> new AnswerNotFoundException(answerId));
+        if(voteToDelete == null)
+            return;
 
-        VoteEntity vote = answerEntity.getVotes().stream().filter((v) -> v.getUser().equals(user)).findFirst().get();
-        answerEntity.getVotes().remove(vote);
+        voteRepository.deleteById(voteToDelete.getId());
 
-        answerRepository.save(answerEntity);
-        this.roleLogicHandler.updateRole(user);
-        this.roleLogicHandler.updateRole(answerEntity.getUser());
-    
-        return "ok";
+        this.rolesService.updateRole(userEntity);
+        this.rolesService.updateRole(targetUser);
     }
 }
