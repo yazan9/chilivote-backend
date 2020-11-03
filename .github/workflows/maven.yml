@@ -31,3 +31,13 @@ jobs:
         key: ${{ secrets.KEY }}
         source: "target/chilivote-backend-0.1.0.jar"
         target: "chilivote-api"
+    - name: Restart Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        port: ${{ secrets.PORT }}
+        key: ${{ secrets.KEY }}
+        script: |
+          sudo chmod 744 /home/ubuntu/chilivote-api/target/chilivote-backend-0.1.0.jar
+          sudo systemctl restart chilivote
