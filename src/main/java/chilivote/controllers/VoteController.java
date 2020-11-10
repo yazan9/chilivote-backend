@@ -23,26 +23,19 @@ import org.springframework.http.HttpStatus;
 public class VoteController
 {
     @Autowired
-    private VotesService voteLogicHandler;
+    private VotesService votesService;
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path="/vote/{id}")
-    public @ResponseBody void vote(@RequestHeader("Authorization") String token, @PathVariable Integer id)
+    public @ResponseBody List<AnswerVotePairDTO> vote(@RequestHeader("Authorization") String token, @PathVariable Integer id)
     {
-        voteLogicHandler.vote(id, token);
-    } 
-
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping(path="/vote_return/{id}")
-    public @ResponseBody List<AnswerVotePairDTO> voteAndGetAnswers(@RequestHeader("Authorization") String token, @PathVariable Integer id)
-    {
-        return voteLogicHandler.voteAndGetAnswers(id, token);
+        return votesService.voteAndGetAnswers(id, token);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path="/unvote/{id}")
     public @ResponseBody void unvote(@RequestHeader("Authorization") String token, @PathVariable Integer id)
     {
-        voteLogicHandler.unvote(id, token);
+        votesService.unvote(id, token);
     } 
 }
