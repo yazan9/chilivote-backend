@@ -49,7 +49,7 @@ public class NotificationsService {
     public ResponseEntity<?> readNotification(String token, Integer chilivoteId) throws Exception{
         Integer user_id = jwtTokenUtil.getIdFromToken(token);
         UserEntity owner = userRepository.findById(user_id).orElseThrow(() -> new UserNotFoundException(user_id));
-        List<NotificationEntity> readNotifications = owner.getNotifications().stream().filter(n -> n.getChilivote().getId() == chilivoteId).collect(Collectors.toList());
+        List<NotificationEntity> readNotifications = owner.getNotifications().stream().filter(n -> n.getChilivote().getId().equals(chilivoteId)).collect(Collectors.toList());
 
         notificationRepository.deleteAll(readNotifications);
 
