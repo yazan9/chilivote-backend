@@ -47,7 +47,7 @@ public class ChilivoteController
         return chilivoteService.GetMyChilivotes(token);
     }
 
-    @GetMapping(path="/{id}}")
+    @GetMapping(path="/{id}")
     public @ResponseBody MyChilivoteDTO GetMyChilivote(@RequestHeader("Authorization") String token, @PathVariable Integer id)
     {
         return chilivoteService.getMyChilivote(token, id);
