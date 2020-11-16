@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import chilivote.entities.ChilivoteEntity;
-import chilivote.services.ChilivoteLogicHandler;
+import chilivote.services.ChilivoteService;
 import chilivote.models.domain.ChilivoteDTOBE;
 import chilivote.models.domain.ChilivoteDTOUI;
 import chilivote.models.domain.ChilivoteDTOUIUpdate;
@@ -30,7 +30,7 @@ import chilivote.Repositories.ChilivoteRepository;
 public class ChilivoteController
 {
     @Autowired
-    private ChilivoteLogicHandler chilivoteLogicHandler;
+    private ChilivoteService chilivoteService;
 
     @Autowired //for repository auto-generation
     private ChilivoteRepository chilivoteRepository;
@@ -44,48 +44,54 @@ public class ChilivoteController
     @GetMapping(path="/mychilivotes")
     public @ResponseBody Iterable<MyChilivoteDTO> GetMyChilivotes(@RequestHeader("Authorization") String token)
     {
-        return chilivoteLogicHandler.GetMyChilivotes(token);
+        return chilivoteService.GetMyChilivotes(token);
+    }
+
+    @GetMapping(path="/{id}}")
+    public @ResponseBody MyChilivoteDTO GetMyChilivote(@RequestHeader("Authorization") String token, @PathVariable Integer id)
+    {
+        return chilivoteService.getMyChilivote(token, id);
     }
 
     @GetMapping(path="/feed")
     public @ResponseBody Iterable<ChilivoteVotableDTO> Feed(@RequestHeader("Authorization") String token)
     {
-        return chilivoteLogicHandler.GetFeed(token);
+        return chilivoteService.GetFeed(token);
     }
 
     @GetMapping(path="/random_feed")
     public @ResponseBody Iterable<ChilivoteVotableDTO> RandomFeed(@RequestHeader("Authorization") String token)
     {
-        return chilivoteLogicHandler.GetRandomFeed(token);
+        return chilivoteService.GetRandomFeed(token);
     }
 
     @GetMapping(path="/trending_feed")
     public @ResponseBody Iterable<ChilivoteVotableDTO> TrendingFeed(@RequestHeader("Authorization") String token)
     {
-        return chilivoteLogicHandler.GetTrendingFeed(token);
+        return chilivoteService.GetTrendingFeed(token);
     }
 
     @GetMapping(path="/fire_chilivote")
     public @ResponseBody List<ChilivoteVotableDTO> FireChilivote(@RequestHeader("Authorization") String token)
     {
-        return chilivoteLogicHandler.GetFireChilivote(token);
+        return chilivoteService.GetFireChilivote(token);
     }
 
     @PostMapping(path="/add")
     public @ResponseBody ChilivoteDTOBE add(@RequestHeader("Authorization") String token, @RequestBody ChilivoteDTOUI DTO)
     {
-        return chilivoteLogicHandler.CreateChilivote(DTO, token);
+        return chilivoteService.CreateChilivote(DTO, token);
     } 
 
     @PutMapping(path="/update")
     public @ResponseBody ChilivoteDTOBE update(@RequestHeader("Authorization") String token, @RequestBody ChilivoteDTOUIUpdate DTO)
     {
-        return chilivoteLogicHandler.UpdateChilivote(DTO, token);
+        return chilivoteService.UpdateChilivote(DTO, token);
     }
 
     @DeleteMapping(path="/delete/{id}")
     public @ResponseBody boolean delete(@RequestHeader("Authorization") String token, @PathVariable Integer id)
     {
-        return chilivoteLogicHandler.DeleteChilivote(id,  token);
+        return chilivoteService.DeleteChilivote(id,  token);
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import chilivote.exceptions.EntityNotFoundException;
+import chilivote.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,9 +16,6 @@ import chilivote.entities.AnswerEntity;
 import chilivote.entities.ChilivoteEntity;
 import chilivote.entities.FollowEntity;
 import chilivote.entities.UserEntity;
-import chilivote.exceptions.ChilivoteNotFoundException;
-import chilivote.exceptions.ForbiddenOperationException;
-import chilivote.exceptions.UserNotFoundException;
 import chilivote.jwt.JwtTokenUtil;
 import chilivote.models.domain.AnswerVoteDTO;
 import chilivote.models.domain.ChilivoteDTOBE;
@@ -31,7 +28,7 @@ import chilivote.Repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ChilivoteLogicHandler
+public class ChilivoteService
 {
     @Autowired
     private RolesService roleLogicHandler;
@@ -56,6 +53,20 @@ public class ChilivoteLogicHandler
             Result.add(this.ToMyChilivoteDTO(entity));
         }
         return Result;
+    }
+
+    public MyChilivoteDTO getMyChilivote(String token, int chilivoteId)
+    {
+        Integer userId = jwtTokenUtil.getIdFromToken(token);
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+
+        ChilivoteEntity chilivoteEntity = chilivoteRepository.findById(chilivoteId).orElseThrow(() -> new EntityNotFoundException(chilivoteId, "Chilivote"));
+
+        if(!userOwnsChilivote(userEntity, chilivoteEntity)){
+            throw new ForbiddenException();
+        }
+
+        return ToMyChilivoteDTO(chilivoteEntity);
     }
 
     public List<ChilivoteVotableDTO> GetFeed(String token)
