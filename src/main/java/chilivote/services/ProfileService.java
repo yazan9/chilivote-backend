@@ -41,7 +41,7 @@ public class ProfileService {
 
     public ResponseEntity<?> updateProfile(String token, ProfileDTO profile){
         UserEntity owner = this.commonService.getOwner(token);
-        owner.setAvatar("{url='".concat(profile.avatar).concat("'}"));
+        owner.setAvatar("{url=".concat(profile.avatar).concat("}"));
         owner.setUsername(profile.username);
         this.userRepository.save(owner);
         return ResponseEntity.ok().build();
