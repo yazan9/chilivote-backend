@@ -56,7 +56,13 @@ public class UsersService
         if(userDetails == null)
             return CreateNewUser(facebookProfile);
         final String token = jwtTokenUtil.generateToken(userDetails);
+        updateFacebookAvatar(facebookProfile, userDetails);
         return token;
+    }
+
+    public void updateFacebookAvatar(FacebookProfile facebookProfile, UserEntity userEntity){
+        userEntity.setAvatar(facebookProfile.picture.toString());
+        userRepository.save(userEntity);
     }
 
     protected String CreateNewUser(FacebookProfile facebookProfile)
