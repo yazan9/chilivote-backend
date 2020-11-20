@@ -313,26 +313,30 @@ public class ChilivoteService
     {
         ChilivoteVotableDTO DTO = new ChilivoteVotableDTO();
         List<AnswerEntity> answerEntities = new ArrayList<AnswerEntity>(entity.getAnswers());
-        
+
+        AnswerEntity leftAnswer = answerEntities.get(0);
+        AnswerEntity rightAnswer = answerEntities.get(1);
+
         DTO.answerLeft = new AnswerVoteDTO();
-        DTO.answerLeft.url = answerEntities.get(0).getUrl();
-        DTO.answerLeft.votes = answerEntities.get(0).getVotes().size();
-        DTO.answerLeft.voted = !answerEntities.get(0).getVotes().stream().filter((vote) ->
+        DTO.answerLeft.url = leftAnswer.getUrl();
+        DTO.answerLeft.votes = leftAnswer.getVotes().size();
+        DTO.answerLeft.voted = !leftAnswer.getVotes().stream().filter((vote) ->
         vote.getUser().getId() == user.getId()).findFirst().isEmpty();
-        DTO.answerLeft.id = answerEntities.get(0).getId();
+        DTO.answerLeft.id = leftAnswer.getId();
 
         DTO.answerRight = new AnswerVoteDTO();
-        DTO.answerRight.url = answerEntities.get(1).getUrl();
-        DTO.answerRight.votes = answerEntities.get(1).getVotes().size();
-        DTO.answerRight.voted = !answerEntities.get(1).getVotes().stream().filter((vote) ->
+        DTO.answerRight.url = rightAnswer.getUrl();
+        DTO.answerRight.votes = rightAnswer.getVotes().size();
+        DTO.answerRight.voted = !rightAnswer.getVotes().stream().filter((vote) ->
         vote.getUser().getId() == user.getId()).findFirst().isEmpty();
-        DTO.answerRight.id = answerEntities.get(1).getId();
+        DTO.answerRight.id = rightAnswer.getId();
 
         DTO.title = entity.getTitle();
         DTO.created_at = entity.getCreatedAt();
         DTO.id = entity.getId();
         DTO.username = entity.getUser().getUsername();
         DTO.userId = entity.getUser().getId();
+        DTO.avatar = entity.getUser().getAvatar();
 
         DTO.isFollowing = !user.getFollowing().stream().filter(u -> 
         u.getTo().getId() == entity.getUser().getId())

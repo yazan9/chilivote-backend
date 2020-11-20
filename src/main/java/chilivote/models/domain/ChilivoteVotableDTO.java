@@ -12,4 +12,5 @@ public class ChilivoteVotableDTO
     public String username;
     public Integer userId;
     public boolean isFollowing;
+    public String avatar;
 }
