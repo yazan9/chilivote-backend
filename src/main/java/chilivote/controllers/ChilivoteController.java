@@ -77,6 +77,12 @@ public class ChilivoteController
         return chilivoteService.GetFireChilivote(token);
     }
 
+    @GetMapping(path="/private_chilivote")
+    public @ResponseBody List<ChilivoteVotableDTO> PrivateChilivote(@RequestHeader("Authorization") String token)
+    {
+        return chilivoteService.GetPrivateChilivotes(token);
+    }
+
     @PostMapping(path="/add")
     public @ResponseBody ChilivoteDTOBE add(@RequestHeader("Authorization") String token, @RequestBody ChilivoteDTOUI DTO)
     {

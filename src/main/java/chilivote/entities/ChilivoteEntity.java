@@ -32,6 +32,10 @@ public class ChilivoteEntity
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    private boolean isPrivate;
+
+    private String followers;
+
     @Override
 	public boolean equals(Object o) {
 		if ( this == o ) {

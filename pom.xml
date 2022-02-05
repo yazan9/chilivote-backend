@@ -87,7 +87,13 @@
         </dependency>
         <!-- lombok -->
 
-
+        <!-- swagger -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.5.9</version>
+        </dependency>
+        <!-- swagger -->
 
     </dependencies>
 

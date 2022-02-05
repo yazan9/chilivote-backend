@@ -1,11 +1,8 @@
 package chilivote.services;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import chilivote.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,6 +157,57 @@ public class ChilivoteService
         return Result;
     }
 
+    public List<ChilivoteVotableDTO> GetPrivateChilivotes(String token)
+    {
+        Integer id = jwtTokenUtil.getIdFromToken(token);
+
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        Long q = chilivoteRepository.count();
+        int idx = (int)(Math.random()*q);
+        Page<ChilivoteEntity> privateChilivotes = chilivoteRepository.findAll(PageRequest.of(idx, 4));
+        List<ChilivoteEntity> chilivotes = privateChilivotes.getContent();
+
+        //returning default results
+        if(chilivotes.size() == 0){
+            Iterable<ChilivoteEntity> iterables = chilivoteRepository.findAll();
+            chilivotes = new ArrayList<ChilivoteEntity>();
+            for(ChilivoteEntity c: iterables)
+            {
+                chilivotes.add(c);
+            }
+        }
+
+        //get voted ids
+        Set<Integer> VotedChilivoteIds = user.getVotes().stream().
+                map(vote -> vote.getChilivote().getId()).collect(Collectors.toSet());
+
+        //get allowed list
+        //List<Integer> allowedUserIds =
+        String followers = "1,2";
+        List<Integer> longIds = Stream.of(followers.split(","))
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+
+        //filter chilivotes by 2 conditions
+        List<ChilivoteEntity> filteredChilivotes = chilivotes.stream().filter(chilivote ->
+                chilivote.getUser().getId() != user.getId() &&
+                        !VotedChilivoteIds.contains(chilivote.getId()) &&
+                        Stream.of(followers.split(","))
+                                .map(Integer::parseInt)
+                                .collect(Collectors.toList()).contains(user.getId())
+        ).collect(Collectors.toList());
+
+        List<ChilivoteVotableDTO> Result = new ArrayList<ChilivoteVotableDTO>();
+
+        for(ChilivoteEntity chilivote: filteredChilivotes)
+        {
+            Result.add(this.ToChilivoteVotableDTO(chilivote, user));
+        }
+        return Result;
+    }
+
     public List<ChilivoteVotableDTO> GetTrendingFeed(String token)
     {
         Integer id = jwtTokenUtil.getIdFromToken(token);
@@ -257,6 +305,8 @@ public class ChilivoteService
         entity.setTitle(DTO.title);
         entity.setAnswers(answerEntities);
         entity.setUser(user);
+        entity.setPrivate(DTO.isPrivate);
+        entity.setFollowers(DTO.followers.stream().map(String::valueOf).collect(Collectors.joining(",")));
 
         for(AnswerEntity answerEntity : answerEntities)
         {

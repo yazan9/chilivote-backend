@@ -65,8 +65,8 @@ public class UserController
         return ResponseEntity.ok(new JwtResponse(accessToken));
     }
 
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public ResponseEntity<?> register(@RequestBody User user) throws Exception {
+    @RequestMapping(path = "/register", method = RequestMethod.POST)
+    public @ResponseBody ResponseEntity<?> register(@RequestBody User user) throws Exception {
         try {
             UserEntity savedUser = userDetailsService.save(user);
             doAuthenticate(user.getEmail(), user.getPassword());
