@@ -182,12 +182,12 @@ public class ChilivoteService
         //get voted ids
         Set<Integer> VotedChilivoteIds = user.getVotes().stream().
                 map(vote -> vote.getChilivote().getId()).collect(Collectors.toSet());
-        
+
         //filter chilivotes by 2 conditions
         List<ChilivoteEntity> filteredChilivotes = chilivotes.stream().filter(chilivote ->
                 chilivote.getUser().getId() != user.getId() &&
                         !VotedChilivoteIds.contains(chilivote.getId()) &&
-                        Stream.of(followers.split(","))
+                        Stream.of(chilivote.getFollowers().split(","))
                                 .map(Integer::parseInt)
                                 .collect(Collectors.toList()).contains(user.getId())
         ).collect(Collectors.toList());
