@@ -187,6 +187,7 @@ public class ChilivoteService
         List<ChilivoteEntity> filteredChilivotes = chilivotes.stream().filter(chilivote ->
                 chilivote.getUser().getId() != user.getId() &&
                         !VotedChilivoteIds.contains(chilivote.getId()) &&
+                        chilivote.getFollowers() != null &&
                         Stream.of(chilivote.getFollowers().split(","))
                                 .map(Integer::parseInt)
                                 .collect(Collectors.toList()).contains(user.getId())
