@@ -12,4 +12,5 @@ import chilivote.entities.ChilivoteEntity;
 public interface ChilivoteRepository extends JpaRepository<ChilivoteEntity, Integer> {
     Optional<List<ChilivoteEntity>> findByUserId(Integer id);
     Page<ChilivoteEntity> findAll(Pageable pageable);
+    Optional<List<ChilivoteEntity>> findByIsPrivate(boolean isPrivate);
 }

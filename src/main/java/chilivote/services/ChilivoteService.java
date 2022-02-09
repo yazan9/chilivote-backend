@@ -78,7 +78,8 @@ public class ChilivoteService
             List<ChilivoteEntity> chilivotes = following.getTo().getChilivotes();
             for(ChilivoteEntity chilivote: chilivotes)
             {
-                Result.add(this.ToChilivoteVotableDTO(chilivote, user));
+                if(!chilivote.isPrivate() && !user.getPreferences().hide.contains(chilivote.getUser().getId()))
+                    Result.add(this.ToChilivoteVotableDTO(chilivote, user));
             }
         }
         return Result;
@@ -110,7 +111,8 @@ public class ChilivoteService
         for(ChilivoteEntity pagedChilivote: chilivotes)
         {
             if(user.getId() != pagedChilivote.getUser().getId()
-            && ! user.getPreferences().hide.contains(pagedChilivote.getUser().getId()))
+            && !user.getPreferences().hide.contains(pagedChilivote.getUser().getId())
+            && !pagedChilivote.isPrivate())
                 FinalResult.add(this.ToChilivoteVotableDTO(pagedChilivote, user));
         }
         return FinalResult;
@@ -164,26 +166,12 @@ public class ChilivoteService
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        Long q = chilivoteRepository.count();
-        int idx = (int)(Math.random()*q);
-        Page<ChilivoteEntity> privateChilivotes = chilivoteRepository.findAll(PageRequest.of(idx, 4));
-        List<ChilivoteEntity> chilivotes = privateChilivotes.getContent();
-
-        //returning default results
-        if(chilivotes.size() == 0){
-            Iterable<ChilivoteEntity> iterables = chilivoteRepository.findAll();
-            chilivotes = new ArrayList<ChilivoteEntity>();
-            for(ChilivoteEntity c: iterables)
-            {
-                chilivotes.add(c);
-            }
-        }
+        List<ChilivoteEntity> chilivotes = chilivoteRepository.findByIsPrivate(true).orElse(new ArrayList<>());
 
         //get voted ids
         Set<Integer> VotedChilivoteIds = user.getVotes().stream().
                 map(vote -> vote.getChilivote().getId()).collect(Collectors.toSet());
 
-        //filter chilivotes by 2 conditions
         List<ChilivoteEntity> filteredChilivotes = chilivotes.stream().filter(chilivote ->
                 chilivote.getUser().getId() != user.getId() &&
                         !VotedChilivoteIds.contains(chilivote.getId()) &&
@@ -193,11 +181,13 @@ public class ChilivoteService
                                 .collect(Collectors.toList()).contains(user.getId())
         ).collect(Collectors.toList());
 
+        //filter chilivotes by 2 conditions
         List<ChilivoteVotableDTO> Result = new ArrayList<ChilivoteVotableDTO>();
 
         for(ChilivoteEntity chilivote: filteredChilivotes)
         {
-            Result.add(this.ToChilivoteVotableDTO(chilivote, user));
+            if(!user.getPreferences().hide.contains(chilivote.getUser().getId()))
+                Result.add(this.ToChilivoteVotableDTO(chilivote, user));
         }
         return Result;
     }
@@ -221,7 +211,7 @@ public class ChilivoteService
         List<ChilivoteVotableDTO> FinalResult = new ArrayList<ChilivoteVotableDTO>();
         for(ChilivoteEntity chilivote: chilivotes)
         {
-            if(user.getId() != chilivote.getUser().getId())
+            if(user.getId() != chilivote.getUser().getId() && !chilivote.isPrivate() && !user.getPreferences().hide.contains(chilivote.getUser().getId()))
                 FinalResult.add(this.ToChilivoteVotableDTO(chilivote, user));
         }
         return FinalResult;
