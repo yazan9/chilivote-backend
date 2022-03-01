@@ -34,3 +34,8 @@ identity-domain-fts360
 .gradle
 
 app/bin/
+
+.mvn/
+	mvnw
+	mvnw.cmd
+

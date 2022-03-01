@@ -78,7 +78,7 @@ public class UsersService
     {
         RestTemplate restTemplate = new RestTemplate();
         String facebookResponse = null;
-        final String fields = "name,email,picture";
+        final String fields = "name,email,picture.type(small)";
 
         try {
             HttpHeaders headers = new HttpHeaders();
