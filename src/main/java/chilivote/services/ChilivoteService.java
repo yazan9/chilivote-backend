@@ -168,13 +168,8 @@ public class ChilivoteService
 
         List<ChilivoteEntity> chilivotes = chilivoteRepository.findByIsPrivate(true).orElse(new ArrayList<>());
 
-        //get voted ids
-        Set<Integer> VotedChilivoteIds = user.getVotes().stream().
-                map(vote -> vote.getChilivote().getId()).collect(Collectors.toSet());
-
         List<ChilivoteEntity> filteredChilivotes = chilivotes.stream().filter(chilivote ->
                 chilivote.getUser().getId() != user.getId() &&
-                        !VotedChilivoteIds.contains(chilivote.getId()) &&
                         chilivote.getFollowers() != null &&
                         Stream.of(chilivote.getFollowers().split(","))
                                 .map(Integer::parseInt)
